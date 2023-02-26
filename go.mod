@@ -1,3 +1,3 @@
-module example.com/monkey
+module monkey
 
 go 1.18

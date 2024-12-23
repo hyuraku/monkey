@@ -20,11 +20,13 @@ const (
 	BANG = "!"
 	ASTERISK = "*"
 	SLASH = "/"
+
 	LT = "<"
 	GT = ">"
 	// デリミタ
 	COMMA = ","
 	SEMICOLON = ";"
+
 	LPAREN = "("
 	RPAREN = ")"
 	LBRACE = "{"

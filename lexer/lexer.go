@@ -11,11 +11,13 @@ type Lexer struct {
 
 func New(input string) *Lexer{
 	l := &Lexer{input: input}
+	// l.position = 0, l.readPosition = 0, l.ch = 0にして初期化
 	l.readChar()
 	return l
 }
 
 func (l *Lexer) readChar(){
+	// 終端文字に達した場合は0をセット
 	if l.readPosition >= len(l.input) {
 		l.ch = 0
 	} else {

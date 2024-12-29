@@ -27,14 +27,13 @@ func Start(in io.Reader, out io.Writer){
 
 		program := p.ParseProgram()
 
-		fmt.Println(program)
-		// if len(p.Errors()) != 0 {
-		// 	printParserErrors(out, p.Errors())
-		// 	continue
-		// }
+		if len(p.Errors()) != 0 {
+			printParserErrors(out, p.Errors())
+			continue
+		}
 
-		// io.WriteString(out, program.String())
-		// io.WriteString(out, "\n")
+		io.WriteString(out, program.String())
+		io.WriteString(out, "\n")
 		
 	}
 }

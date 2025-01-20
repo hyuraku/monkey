@@ -45,7 +45,7 @@ func runCompilerTests(t *testing.T, tests []compilerTestCase) {
 
 		bytecode := compiler.Bytecode()
 
-		err = testInstructions(tt.expectedInstructions[0], bytecode.Instructions)
+		err = testInstructions(tt.expectedInstructions, bytecode.Instructions)
 		if err != nil {
 			t.Errorf("testInstructions failed: %s", err)
 		}
@@ -57,7 +57,7 @@ func runCompilerTests(t *testing.T, tests []compilerTestCase) {
 	}
 }
 
-func testInstructions(expected []byte, actual code.Instructions) error {
+func testInstructions(expected []code.Instructions, actual code.Instructions) error {
 	concatted := concatInstructions(expected)
 	if len(actual) != len(concatted) {
 		return fmt.Errorf("wrong instructions length.\nwant=%q\ngot =%q",concatted, actual)
@@ -104,10 +104,10 @@ func testIntegerObject(expected int64, actual object.Object) error {
 	return nil
 }
 
-func concatInstructions(s []byte) []byte {
-	out := []byte{}
+func concatInstructions(s []code.Instructions) code.Instructions {
+	out := code.Instructions{}
 	for _, ins := range s {
-	out = append(out, ins)
+	out = append(out, ins...)
 	}
 	return out
 }

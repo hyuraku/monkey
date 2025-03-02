@@ -2,8 +2,8 @@ package ast
 
 import (
 	"bytes"
-	"strings"
 	"monkey/token"
+	"strings"
 )
 
 type Node interface {
@@ -52,22 +52,21 @@ type LetStatement struct {
 func (ls *LetStatement) statementNode()       {}
 func (ls *LetStatement) TokenLiteral() string { return ls.Token.Literal }
 
- func (ls *LetStatement) String() string {
- 	var out bytes.Buffer
+func (ls *LetStatement) String() string {
+	var out bytes.Buffer
 
- 	out.WriteString(ls.TokenLiteral() + " ")
- 	out.WriteString(ls.Name.String())
- 	out.WriteString(" = ")
+	out.WriteString(ls.TokenLiteral() + " ")
+	out.WriteString(ls.Name.String())
+	out.WriteString(" = ")
 
- 	if ls.Value != nil {
- 		out.WriteString(ls.Value.String())
- 	}
+	if ls.Value != nil {
+		out.WriteString(ls.Value.String())
+	}
 
- 	out.WriteString(";")
+	out.WriteString(";")
 
- 	return out.String()
- }
-
+	return out.String()
+}
 
 type Identifier struct {
 	Token token.Token // token.IDENT

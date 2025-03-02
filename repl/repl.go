@@ -15,7 +15,7 @@ import (
 
 const PROMPT = ">> "
 
-func Start(in io.Reader, out io.Writer){
+func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 	// env := object.NewEnvironment()
 
@@ -68,13 +68,13 @@ func Start(in io.Reader, out io.Writer){
 		lastPopped := machine.LastPoppedStackElem()
 		io.WriteString(out, lastPopped.Inspect())
 		io.WriteString(out, "\n")
-		
+
 	}
 }
 
 func printParserErrors(out io.Writer, errors []string) {
 	io.WriteString(out, " parser errors:\n")
 	for _, msg := range errors {
-		io.WriteString(out, "\t" + msg + "\n")
+		io.WriteString(out, "\t"+msg+"\n")
 	}
 }

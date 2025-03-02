@@ -8,42 +8,42 @@ import (
 )
 
 func TestLetStatements(t *testing.T) {
-// 	input := `
-// let x = 5;
-// let y = 10;
-// let foobar = 838383;
-// `
+	// 	input := `
+	// let x = 5;
+	// let y = 10;
+	// let foobar = 838383;
+	// `
 
-// 	l := lexer.New(input)
-// 	p := New(l)
+	// 	l := lexer.New(input)
+	// 	p := New(l)
 
-// 	program := p.ParseProgram()
-// 	checkParserErrors(t, p)
-// 	if program == nil {
-// 		t.Fatalf("ParseProgram() returned nil")
-// 	}
-// 	if len(program.Statements) != 3 {
-// 		t.Fatalf("program.Statements does not contain 3 statements. got=%d", len(program.Statements))
-// 	}
+	// 	program := p.ParseProgram()
+	// 	checkParserErrors(t, p)
+	// 	if program == nil {
+	// 		t.Fatalf("ParseProgram() returned nil")
+	// 	}
+	// 	if len(program.Statements) != 3 {
+	// 		t.Fatalf("program.Statements does not contain 3 statements. got=%d", len(program.Statements))
+	// 	}
 
-// 	tests := []struct {
-// 		expectedIdentifier string
-// 	}{
-// 		{"x"},
-// 		{"y"},
-// 		{"foobar"},
-// 	}
+	// 	tests := []struct {
+	// 		expectedIdentifier string
+	// 	}{
+	// 		{"x"},
+	// 		{"y"},
+	// 		{"foobar"},
+	// 	}
 
-// 	for i, tt := range tests {
-// 		stmt := program.Statements[i]
-// 		if !testLetStatement(t, stmt, tt.expectedIdentifier) {
-// 			return
-// 		}
-// 	}
-	tests:= []struct {
-		input string
+	// 	for i, tt := range tests {
+	// 		stmt := program.Statements[i]
+	// 		if !testLetStatement(t, stmt, tt.expectedIdentifier) {
+	// 			return
+	// 		}
+	// 	}
+	tests := []struct {
+		input              string
 		expectedIdentifier string
-		expectedValue interface{}
+		expectedValue      interface{}
 	}{
 		{"let x = 5;", "x", 5},
 		{"let y = 10;", "y", 10},
@@ -191,8 +191,8 @@ func TestIntegerLiteralExpression(t *testing.T) {
 
 func TestParsingPrefixExpressions(t *testing.T) {
 	prefixTests := []struct {
-		input string
-		operator string
+		input        string
+		operator     string
 		integerValue interface{}
 	}{
 		// {"+5;", "+", 5},
@@ -251,9 +251,9 @@ func testIntegerLiteral(t *testing.T, il ast.Expression, value int64) bool {
 
 func TestParsingInfixExpressions(t *testing.T) {
 	infixTests := []struct {
-		input string
-		leftValue interface{}
-		operator string
+		input      string
+		leftValue  interface{}
+		operator   string
 		rightValue interface{}
 	}{
 		{"5 + 5;", 5, "+", 5},
@@ -620,7 +620,7 @@ func TestFunctionLiteral(t *testing.T) {
 
 func TestFunctionParameterParsing(t *testing.T) {
 	tests := []struct {
-		input string
+		input          string
 		expectedParams []string
 	}{
 		{"fn() {};", []string{}},
@@ -772,8 +772,8 @@ func TestParsingHashLiteralsStringKeys(t *testing.T) {
 	}
 
 	expected := map[string]int64{
-		"one": 1,
-		"two": 2,
+		"one":   1,
+		"two":   2,
 		"three": 3,
 	}
 

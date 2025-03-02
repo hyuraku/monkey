@@ -64,7 +64,7 @@ func TestBooleanExpressions(t *testing.T) {
 	runVmTests(t, tests)
 }
 
-func parse (input string) *ast.Program {
+func parse(input string) *ast.Program {
 	l := lexer.New(input)
 	p := parser.New(l)
 	return p.ParseProgram()
@@ -73,7 +73,7 @@ func parse (input string) *ast.Program {
 func testIntegerObject(t *testing.T, expected int64, actual object.Object) error {
 	result, ok := actual.(*object.Integer)
 	if !ok {
-		return fmt.Errorf("object is not Integer. got=%T (%+v)",actual, actual)
+		return fmt.Errorf("object is not Integer. got=%T (%+v)", actual, actual)
 	}
 	if result.Value != expected {
 		return fmt.Errorf("object has wrong value. got=%d, want=%d", result.Value, expected)
@@ -83,7 +83,7 @@ func testIntegerObject(t *testing.T, expected int64, actual object.Object) error
 }
 
 type vmTestCase struct {
-	input string
+	input    string
 	expected interface{}
 }
 

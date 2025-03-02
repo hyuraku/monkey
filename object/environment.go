@@ -31,5 +31,3 @@ func (e *Environment) Set(name string, val Object) Object {
 	}
 	return val
 }
-
-

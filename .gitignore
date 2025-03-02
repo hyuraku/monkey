@@ -1,0 +1,43 @@
+# バイナリファイル
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+monkey
+
+# テスト関連
+*.test
+*.out
+coverage.txt
+
+# 出力ディレクトリ
+/bin/
+/dist/
+
+# 依存関係のキャッシュ
+/vendor/
+/Godeps/
+
+# IDE設定
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# ログファイル
+*.log
+
+# デバッグファイル
+debug
+debug.test
+
+# Go固有のファイル
+*.prof
+*.trace
+*.cov
+
+# ローカル設定
+.env
+.env.local

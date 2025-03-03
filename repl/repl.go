@@ -7,8 +7,8 @@ import (
 	// "monkey/evaluator"
 	// "monkey/object"
 	"monkey/lexer"
-	"monkey/parser"
 	"monkey/object"
+	"monkey/parser"
 
 	"monkey/compiler"
 	"monkey/vm"

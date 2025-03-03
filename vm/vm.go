@@ -18,8 +18,8 @@ type VM struct {
 	constants    []object.Object
 	instructions code.Instructions
 
-	stack  []object.Object
-	sp     int
+	stack   []object.Object
+	sp      int
 	globals []object.Object
 }
 
@@ -28,8 +28,8 @@ func New(bytecode *compiler.Bytecode) *VM {
 		constants:    bytecode.Constants,
 		instructions: bytecode.Instructions,
 
-		stack:  make([]object.Object, StackSize),
-		sp:     0,
+		stack:   make([]object.Object, StackSize),
+		sp:      0,
 		globals: make([]object.Object, GlobalsSize),
 	}
 }

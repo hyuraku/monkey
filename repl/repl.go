@@ -8,6 +8,7 @@ import (
 	// "monkey/object"
 	"monkey/lexer"
 	"monkey/parser"
+	"monkey/object"
 
 	"monkey/compiler"
 	"monkey/vm"
@@ -18,6 +19,9 @@ const PROMPT = ">> "
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 	// env := object.NewEnvironment()
+	constants := []object.Object{}
+	globals := make([]object.Object, vm.GlobalsSize)
+	symbolTable := compiler.NewSymbolTable()
 
 	for {
 		fmt.Printf(PROMPT)
@@ -50,13 +54,15 @@ func Start(in io.Reader, out io.Writer) {
 		// io.WriteString(out, program.String())
 		// io.WriteString(out, "\n")
 
-		comp := compiler.New()
+		comp := compiler.NewWithState(symbolTable, constants)
 		err := comp.Compile(program)
 		if err != nil {
 			fmt.Fprintf(out, "Woops! Compilation failed:\n %s\n", err)
 			continue
 		}
-		machine := vm.New(comp.Bytecode())
+		code := comp.Bytecode()
+		constants = code.Constants
+		machine := vm.NewWithGlobalsStore(code, globals)
 		err = machine.Run()
 		if err != nil {
 			fmt.Fprintf(out, "Woops! Executing bytecode failed:\n %s\n", err)

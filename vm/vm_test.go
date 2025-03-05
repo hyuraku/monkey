@@ -129,6 +129,15 @@ func TestGlobalLetStatements(t *testing.T) {
 	runVmTests(t, tests)
 }
 
+func TestArrayLiterals(t *testing.T) {
+	tests := []vmTestCase{
+		{"[]", []int{}},
+		{"[1, 2, 3]", []int{1, 2, 3}},
+		{"[1 + 2, 3 * 4, 5 + 6]", []int{3, 12, 11}},
+	}
+	runVmTests(t, tests)
+}
+
 func parse(input string) *ast.Program {
 	l := lexer.New(input)
 	p := parser.New(l)
@@ -194,6 +203,20 @@ func testExpectedObject(t *testing.T, expected interface{}, actual object.Object
 		err := testStringObject(expected, actual)
 		if err != nil {
 			t.Errorf("object is not String. got=%T (%+v)", actual, actual)
+		}
+	case []int:
+		result, ok := actual.(*object.Array)
+		if !ok {
+			t.Errorf("object is not Array. got=%T (%+v)", actual, actual)
+		}
+		if len(result.Elements) != len(expected) {
+			t.Errorf("array has wrong num of elements. got=%d", len(result.Elements))
+		}
+		for i, expectedElem := range expected {
+			err := testIntegerObject(t, int64(expectedElem), result.Elements[i])
+			if err != nil {
+				t.Errorf("testIntegerObject failed: %s", err)
+			}
 		}
 	}
 }

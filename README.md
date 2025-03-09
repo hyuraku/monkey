@@ -101,4 +101,4 @@ go test ./lexer
 ## References
 
 - "Writing An Interpreter In Go" by Thorsten Ball
-- "Writing A Compiler In Go" by Thorsten Ball Monkey
+- "Writing A Compiler In Go" by Thorsten Ball

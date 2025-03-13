@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"hash/fnv"
 	"monkey/ast"
-	"strings"
 	"monkey/code"
+	"strings"
 )
 
 const (
@@ -24,7 +24,7 @@ const (
 
 	ARRAY_OBJ = "ARRAY"
 
-	HASH_OBJ = "HASH"
+	HASH_OBJ              = "HASH"
 	COMPILED_FUNCTION_OBJ = "COMPILED_FUNCTION"
 )
 

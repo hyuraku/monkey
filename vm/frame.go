@@ -3,7 +3,7 @@ package vm
 import (
 	"monkey/code"
 	"monkey/object"
-	)
+)
 
 type Frame struct {
 	fn *object.CompiledFunction
@@ -17,5 +17,3 @@ func NewFrame(fn *object.CompiledFunction) *Frame {
 func (f *Frame) Instructions() code.Instructions {
 	return f.fn.Instructions
 }
-
-

@@ -14,7 +14,7 @@ type EmittedInstruction struct {
 }
 
 type Compiler struct {
-	constants    []object.Object
+	constants []object.Object
 
 	symbolTable *SymbolTable
 
@@ -36,7 +36,7 @@ func New() *Compiler {
 	}
 
 	return &Compiler{
-		constants:    []object.Object{},
+		constants:   []object.Object{},
 		symbolTable: NewSymbolTable(),
 		scopes:      []CompilationScope{mainScope},
 	}
@@ -231,10 +231,10 @@ func (c *Compiler) Compile(node ast.Node) error {
 
 		if c.lastInstructionIs(code.OpPop) {
 			c.replaceLastPopWithReturn()
-			}
-			if !c.lastInstructionIs(code.OpReturnValue) {
+		}
+		if !c.lastInstructionIs(code.OpReturnValue) {
 			c.emit(code.OpReturn)
-			}
+		}
 
 		instructions := c.leaveScope()
 		compiledFn := &object.CompiledFunction{Instructions: instructions}
@@ -245,6 +245,12 @@ func (c *Compiler) Compile(node ast.Node) error {
 			return err
 		}
 		c.emit(code.OpReturnValue)
+	case *ast.CallExpression:
+		err := c.Compile(node.Function)
+		if err != nil {
+			return err
+		}
+		c.emit(code.OpCall)
 	}
 	return nil
 }

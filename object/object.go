@@ -197,9 +197,8 @@ func (cf *CompiledFunction) Inspect() string {
 	return fmt.Sprintf("CompiledFunction[%p]", cf)
 }
 
-
 type Closure struct {
-	Function *CompiledFunction
+	Function      *CompiledFunction
 	FreeVariables []Object
 }
 

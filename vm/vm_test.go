@@ -607,3 +607,20 @@ func testStringObject(expected string, actual object.Object) error {
 
 	return nil
 }
+
+func TestClosures(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input: `
+		let newClosure = fn(x) {
+			fn() { x; };
+		};
+		let closure = newClosure(99);
+		closure();
+		`,
+			expected: 99,
+		},
+	}
+
+	runVmTests(t, tests)
+}

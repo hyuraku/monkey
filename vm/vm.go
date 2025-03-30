@@ -221,9 +221,9 @@ func (vm *VM) Run() error {
 			vm.currentFrame().ip += 3
 
 			err := vm.pushClosure(int(constIndex))
-if err != nil {
-return err
-}
+			if err != nil {
+				return err
+			}
 		case code.OpPop:
 			vm.pop()
 		}
@@ -504,9 +504,9 @@ func (vm *VM) callClosure(closure *object.Closure, numArgs int) error {
 
 func (vm *VM) pushClosure(constIndex int) error {
 	constant := vm.constants[constIndex]
-function, ok := constant.(*object.CompiledFunction)
-if !ok {
-	return fmt.Errorf("not a function: %+v", constant)
+	function, ok := constant.(*object.CompiledFunction)
+	if !ok {
+		return fmt.Errorf("not a function: %+v", constant)
 	}
 	closure := &object.Closure{Fn: function}
 	return vm.push(closure)

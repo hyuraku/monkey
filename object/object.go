@@ -198,7 +198,7 @@ func (cf *CompiledFunction) Inspect() string {
 }
 
 type Closure struct {
-	Fn      *CompiledFunction
+	Fn            *CompiledFunction
 	FreeVariables []Object
 }
 

@@ -6,6 +6,7 @@ import (
 	"monkey/lexer"
 	"monkey/token"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -59,6 +60,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
+	p.registerPrefix(token.FLOAT, p.parseFloatLiteral)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
 	p.registerPrefix(token.TRUE, p.parseBoolean)
@@ -196,6 +198,36 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 
 	lit.Value = value
 
+	return lit
+}
+
+func (p *Parser) parseFloatLiteral() ast.Expression {
+	defer untrace(trace("parseFloatLiteral"))
+
+	lit := &ast.FloatLiteral{Token: p.curToken}
+
+	// Check if the token contains a dot
+	if containsDot := strings.Contains(p.curToken.Literal, "."); containsDot {
+		value, err := strconv.ParseFloat(p.curToken.Literal, 64)
+		if err != nil {
+			msg := fmt.Sprintf("could not parse %q as float", p.curToken.Literal)
+			p.errors = append(p.errors, msg)
+			return nil
+		}
+
+		lit.Value = value
+		return lit
+	}
+	
+	// If there's no dot, treat it as an integer and convert
+	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
+	if err != nil {
+		msg := fmt.Sprintf("could not parse %q as integer", p.curToken.Literal)
+		p.errors = append(p.errors, msg)
+		return nil
+	}
+
+	lit.Value = float64(value)
 	return lit
 }
 

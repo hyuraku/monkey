@@ -132,6 +132,9 @@ func (c *Compiler) Compile(node ast.Node) error {
 	case *ast.IntegerLiteral:
 		integer := &object.Integer{Value: node.Value}
 		c.emit(code.OpConstant, c.addConstant(integer))
+	case *ast.FloatLiteral:
+		float := &object.Float{Value: node.Value}
+		c.emit(code.OpConstant, c.addConstant(float))
 	case *ast.IfExpression:
 		err := c.Compile(node.Condition)
 		if err != nil {

@@ -755,3 +755,33 @@ func TestRecursiveFibonacci(t *testing.T) {
 	}
 	runVmTests(t, tests)
 }
+
+func TestFloatArithmetic(t *testing.T) {
+	tests := []vmTestCase{
+		{"1.0", 1.0},
+		{"2.0", 2.0},
+		{"1.0 + 3.0", 4.0},
+		{"2.0 + 7.0", 9.0},
+		{"7.0 - 2.0", 5.0},
+		{"7.0 - 2.0 - 3.0", 2.0},
+		{"5.0 * 2.0", 10.0},
+		{"5.0 * 2.0 * 2.0", 20.0},
+		{"10.0 / 5.0", 2.0},
+		{"10.0 / 5.0 / 2.0", 1.0},
+	}
+	runVmTests(t, tests)
+}
+
+func TestIntegerAndFloatArithmetic(t *testing.T) {
+	tests := []vmTestCase{
+		{"1 + 3.0", 4.0},
+		{"2 + 7.0", 9.0},
+		{"7 - 2.0", 5.0},
+		{"7 - 2.0 - 3", 2.0},
+		{"5 * 2.0", 10.0},
+		{"5 * 2 * 2.0", 20.0},
+		{"10 / 5.0", 2.0},
+		{"10 / 5 / 2.0", 1.0},
+	}
+	runVmTests(t, tests)
+}

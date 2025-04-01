@@ -212,5 +212,6 @@ func (c *Closure) Inspect() string {
 type Float struct {
 	Value float64
 }
+
 func (f *Float) Type() ObjectType { return FLOAT_OBJ }
 func (f *Float) Inspect() string  { return fmt.Sprintf("%f", f.Value) }

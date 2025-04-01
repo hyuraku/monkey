@@ -106,7 +106,7 @@ func (l *Lexer) NextToken() token.Token {
 		} else if isDigit(l.ch) {
 			numberLiteral := l.readNumber()
 			tok.Literal = numberLiteral
-			
+
 			// Check if it's a float by looking for a dot
 			if strings.Contains(numberLiteral, ".") {
 				tok.Type = token.FLOAT
@@ -147,18 +147,18 @@ func (l *Lexer) readNumber() string {
 	for isDigit(l.ch) {
 		l.readChar()
 	}
-	
+
 	// Handle floating point numbers
 	if l.ch == '.' && isDigit(l.peekChar()) {
 		// Consume the dot
 		l.readChar()
-		
+
 		// Read the decimal part
 		for isDigit(l.ch) {
 			l.readChar()
 		}
 	}
-	
+
 	return l.input[position:l.position]
 }
 

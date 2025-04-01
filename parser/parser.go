@@ -218,7 +218,7 @@ func (p *Parser) parseFloatLiteral() ast.Expression {
 		lit.Value = value
 		return lit
 	}
-	
+
 	// If there's no dot, treat it as an integer and convert
 	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
 	if err != nil {

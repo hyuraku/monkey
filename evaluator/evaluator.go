@@ -147,6 +147,12 @@ func evalInflixExpression(operator string, left, right object.Object) object.Obj
 		return evalIntegerInfixExpression(operator, left, right)
 	case left.Type() == object.FLOAT_OBJ && right.Type() == object.FLOAT_OBJ:
 		return evalFloatInfixExpression(operator, left, right)
+	case left.Type() == object.FLOAT_OBJ && right.Type() == object.INTEGER_OBJ:
+		convertedRight := &object.Float{Value: float64(right.(*object.Integer).Value)}
+		return evalFloatInfixExpression(operator, left, convertedRight)
+	case left.Type() == object.INTEGER_OBJ && right.Type() == object.FLOAT_OBJ:
+		convertedLeft := &object.Float{Value: float64(left.(*object.Integer).Value)}
+		return evalFloatInfixExpression(operator, convertedLeft, right)
 	case operator == "==":
 		return nativeBoolToBooleanObject(left == right)
 	case operator == "!=":

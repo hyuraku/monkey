@@ -28,6 +28,8 @@ const (
 	COMPILED_FUNCTION_OBJ = "COMPILED_FUNCTION"
 
 	CLOSURE_OBJ = "CLOSURE"
+
+	FLOAT_OBJ = "FLOAT"
 )
 
 type ObjectType string
@@ -206,3 +208,10 @@ func (c *Closure) Type() ObjectType { return CLOSURE_OBJ }
 func (c *Closure) Inspect() string {
 	return fmt.Sprintf("Closure[%p]", c)
 }
+
+type Float struct {
+	Value float64
+}
+
+func (f *Float) Type() ObjectType { return FLOAT_OBJ }
+func (f *Float) Inspect() string  { return fmt.Sprintf("%f", f.Value) }

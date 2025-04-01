@@ -35,6 +35,57 @@ func TestEvalIntegerExpression(t *testing.T) {
 	}
 }
 
+func TestEvalFloatExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected float64
+	}{
+		{"5.0", 5.0},
+		{"10.0", 10.0},
+		{"-5.0", -5.0},
+		{"-10.0", -10.0},
+		{"5.0 + 5.0 + 5.0 + 5.0 - 10.0", 10.0},
+		{"2.0 * 2.0 * 2.0 * 2.0 * 2.0", 32.0},
+		{"0.1 + 0.2", 0.3},
+		{"1.5 * 2.5", 3.75},
+		{"10.0 / 2.5", 4.0},
+		{"-5.5", -5.5},
+		{"3.0 * (2.5 + 1.5)", 12.0},
+		{"(5.0 + 5.0) / 2.0", 5.0},
+		{"2.5 + 2.5 * 3.0", 10.0},
+		{"(10.5 + 0.5) * (3.0 / 1.5)", 22.0},
+		{"5.0 - 3.2", 1.8},
+		{"10.0 / 0.5", 20.0},
+		{"1.1 * 1.1", 1.21},
+		{"9.9 - 9.8", 0.1},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testFloatObject(t, evaluated, tt.expected)
+	}
+}
+
+func TestEvalFloatAndIntgerExpressionWithInteger(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected float64
+	}{
+		{"5 + 5.0", 10.0},
+		{"5.0 + 5", 10.0},
+		{"5.0 - 5", 0.0},
+		{"5 - 5.0", 0.0},
+		{"5.0 * 5", 25.0},
+		{"5 * 5.0", 25.0},
+		{"5.0 / 5", 1.0},
+		{"5 / 5.0", 1.0},
+	}
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testFloatObject(t, evaluated, tt.expected)
+	}
+}
+
 func testEval(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
@@ -42,6 +93,28 @@ func testEval(input string) object.Object {
 	env := object.NewEnvironment()
 
 	return Eval(program, env)
+}
+
+func testFloatObject(t *testing.T, obj object.Object, expected float64) bool {
+	result, ok := obj.(*object.Float)
+	if !ok {
+		t.Errorf("object is not Float. got=%T (%+v)", obj, obj)
+		return false
+	}
+
+	// 浮動小数点数比較の許容誤差を設定
+	const epsilon = 0.0000001
+	diff := result.Value - expected
+	if diff < 0 {
+		diff = -diff
+	}
+
+	if diff > epsilon {
+		t.Errorf("object has wrong value. got=%f, want=%f", result.Value, expected)
+		return false
+	}
+
+	return true
 }
 
 func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {

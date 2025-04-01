@@ -13,6 +13,7 @@ const (
 	// 識別子 + リテラル
 	IDENT = "IDENT" // add, foobar, x, y, ...
 	INT   = "INT"   // 1343456
+	FLOAT = "FLOAT" // 13.45
 	// 演算子
 	ASSIGN   = "="
 	PLUS     = "+"

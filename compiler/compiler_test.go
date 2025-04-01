@@ -620,6 +620,12 @@ func testConstants(t *testing.T, expected []interface{}, actual []object.Object)
 				return fmt.Errorf("constant %d - testIntegerObject failed: %s",
 					i, err)
 			}
+		case float64:
+			err := testFloatObject(constant, actual[i])
+			if err != nil {
+				return fmt.Errorf("constant %d - testFloatObject failed: %s",
+					i, err)
+			}
 		case string:
 			err := testStringObject(constant, actual[i])
 			if err != nil {
@@ -1081,6 +1087,53 @@ func TestRecursiveFunctions(t *testing.T) {
 	runCompilerTests(t, tests)
 }
 
+func TestFloatArithmetic(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input:             "1.5 + 2.5",
+			expectedConstants: []interface{}{1.5, 2.5},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpAdd),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input:             "3.5 - 1.2",
+			expectedConstants: []interface{}{3.5, 1.2},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpSub),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input:             "2.5 * 3.0",
+			expectedConstants: []interface{}{2.5, 3.0},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpMul),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input:             "10.0 / 2.0",
+			expectedConstants: []interface{}{10.0, 2.0},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpDiv),
+				code.Make(code.OpPop),
+			},
+		},
+	}
+
+	runCompilerTests(t, tests)
+}
+
 func testIntegerObject(expected int64, actual object.Object) error {
 	result, ok := actual.(*object.Integer)
 	if !ok {
@@ -1088,6 +1141,18 @@ func testIntegerObject(expected int64, actual object.Object) error {
 	}
 	if result.Value != expected {
 		return fmt.Errorf("object has wrong value. got=%d, want=%d",
+			result.Value, expected)
+	}
+	return nil
+}
+
+func testFloatObject(expected float64, actual object.Object) error {
+	result, ok := actual.(*object.Float)
+	if !ok {
+		return fmt.Errorf("object is not Float. got=%T (%+v)", actual, actual)
+	}
+	if result.Value != expected {
+		return fmt.Errorf("object has wrong value. got=%f, want=%f",
 			result.Value, expected)
 	}
 	return nil

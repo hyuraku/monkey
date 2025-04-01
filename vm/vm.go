@@ -172,7 +172,6 @@ func (vm *VM) Run() error {
 			vm.currentFrame().ip += 1
 
 			err := vm.executeCall(int(numArgs))
-			// err := vm.callFunction(int(numArgs))
 			if err != nil {
 				return err
 			}
@@ -273,6 +272,14 @@ func (vm *VM) executeBinaryOperation(op code.Opcode) error {
 	switch {
 	case leftType == object.INTEGER_OBJ && rightType == object.INTEGER_OBJ:
 		return vm.executeBinaryIntegerOperation(op, left, right)
+	case leftType == object.FLOAT_OBJ && rightType == object.FLOAT_OBJ:
+		return vm.executeBinaryFloatOperation(op, left, right)
+	case leftType == object.INTEGER_OBJ && rightType == object.FLOAT_OBJ:
+		convertedLeft := &object.Float{Value: float64(left.(*object.Integer).Value)}
+		return vm.executeBinaryFloatOperation(op, convertedLeft, right)
+	case leftType == object.FLOAT_OBJ && rightType == object.INTEGER_OBJ:
+		convertedRight := &object.Float{Value: float64(right.(*object.Integer).Value)}
+		return vm.executeBinaryFloatOperation(op, left, convertedRight)
 	case leftType == object.STRING_OBJ && rightType == object.STRING_OBJ:
 		return vm.executeBinaryStringOperation(op, left, right)
 	default:
@@ -299,6 +306,26 @@ func (vm *VM) executeBinaryIntegerOperation(op code.Opcode, left, right object.O
 	}
 
 	vm.push(&object.Integer{Value: result})
+	return nil
+}
+
+func (vm *VM) executeBinaryFloatOperation(op code.Opcode, left, right object.Object) error {
+	leftValue := left.(*object.Float).Value
+	rightValue := right.(*object.Float).Value
+	var result float64
+	switch op {
+	case code.OpAdd:
+		result = leftValue + rightValue
+	case code.OpSub:
+		result = leftValue - rightValue
+	case code.OpMul:
+		result = leftValue * rightValue
+	case code.OpDiv:
+		result = leftValue / rightValue
+	default:
+		return fmt.Errorf("unknown operator: %d", op)
+	}
+	vm.push(&object.Float{Value: result})
 	return nil
 }
 

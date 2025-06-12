@@ -9,5 +9,5 @@ var builtins = map[string]*object.Builtin{
 	"last":  object.GetBuiltinByName("last"),
 	"rest":  object.GetBuiltinByName("rest"),
 	"push":  object.GetBuiltinByName("push"),
-	"pop":  object.GetBuiltinByName("pop"),
+	"pop":   object.GetBuiltinByName("pop"),
 }

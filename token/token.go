@@ -24,6 +24,8 @@ const (
 
 	LT = "<"
 	GT = ">"
+	LTE = "<="
+	GTE = ">="
 	// デリミタ
 	COMMA     = ","
 	SEMICOLON = ";"

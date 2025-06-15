@@ -94,7 +94,7 @@ func (vm *VM) Run() error {
 			if err != nil {
 				return err
 			}
-		case code.OpEqual, code.OpNotEqual, code.OpGreaterThan:
+		case code.OpEqual, code.OpNotEqual, code.OpGreaterThan, code.OpLessThan, code.OpGreaterThanEqual, code.OpLessThanEqual:
 			err := vm.executeComparison(op)
 			if err != nil {
 				return err
@@ -373,6 +373,12 @@ func (vm *VM) executeIntegerComparison(op code.Opcode, left, right object.Object
 		result = leftValue != rightValue
 	case code.OpGreaterThan:
 		result = leftValue > rightValue
+	case code.OpLessThan:
+		result = leftValue < rightValue
+	case code.OpGreaterThanEqual:
+		result = leftValue >= rightValue
+	case code.OpLessThanEqual:
+		result = leftValue <= rightValue
 	default:
 		return fmt.Errorf("unknown operator: %d", op)
 	}

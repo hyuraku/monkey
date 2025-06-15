@@ -22,8 +22,10 @@ const (
 	ASTERISK = "*"
 	SLASH    = "/"
 
-	LT = "<"
-	GT = ">"
+	LT  = "<"
+	GT  = ">"
+	LTE = "<="
+	GTE = ">="
 	// デリミタ
 	COMMA     = ","
 	SEMICOLON = ";"

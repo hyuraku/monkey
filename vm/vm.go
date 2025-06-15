@@ -120,6 +120,30 @@ func (vm *VM) Run() error {
 			if !isTruthy(condition) {
 				vm.currentFrame().ip = pos - 1
 			}
+		case code.OpLogicalAnd:
+			pos := int(code.ReadUint16(ins[ip+1:]))
+			vm.currentFrame().ip += 2
+
+			left := vm.pop()
+			if !isTruthy(left) {
+				vm.currentFrame().ip = pos - 1
+				err := vm.push(left)
+				if err != nil {
+					return err
+				}
+			}
+		case code.OpLogicalOr:
+			pos := int(code.ReadUint16(ins[ip+1:]))
+			vm.currentFrame().ip += 2
+
+			left := vm.pop()
+			if isTruthy(left) {
+				vm.currentFrame().ip = pos - 1
+				err := vm.push(left)
+				if err != nil {
+					return err
+				}
+			}
 		case code.OpNull:
 			err := vm.push(Null)
 			if err != nil {

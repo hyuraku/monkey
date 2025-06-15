@@ -29,6 +29,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		}
 		return evalPrefixExpression(node.Operator, right)
 	case *ast.InfixExpression:
+		if node.Operator == "&&" || node.Operator == "||" {
+			return evalLogicalInfixExpression(node, env)
+		}
 		left := Eval(node.Left, env)
 		if isError(left) {
 			return left
@@ -431,4 +434,26 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 	}
 
 	return pair.Value
+}
+
+func evalLogicalInfixExpression(node *ast.InfixExpression, env *object.Environment) object.Object {
+	left := Eval(node.Left, env)
+	if isError(left) {
+		return left
+	}
+
+	switch node.Operator {
+	case "&&":
+		if !isTruthy(left) {
+			return left
+		}
+		return Eval(node.Right, env)
+	case "||":
+		if isTruthy(left) {
+			return left
+		}
+		return Eval(node.Right, env)
+	default:
+		return newError("unknown logical operator: %s", node.Operator)
+	}
 }

@@ -162,6 +162,14 @@ func TestEvalBooleanExpression(t *testing.T) {
 		{"(1 < 2) == false", false},
 		{"(1 > 2) == true", false},
 		{"(1 > 2) == false", true},
+		{"true && true", true},
+		{"true && false", false},
+		{"false && true", false},
+		{"false && false", false},
+		{"true || true", true},
+		{"true || false", true},
+		{"false || true", true},
+		{"false || false", false},
 	}
 
 	for _, tt := range tests {
@@ -183,6 +191,33 @@ func testBooleanObject(t *testing.T, obj object.Object, expected bool) bool {
 	}
 
 	return true
+}
+
+func TestLogicalOperators(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{"1 && 2", 2},
+		{"0 && 2", 2},
+		{"1 || 2", 1},
+		{"0 || 2", 0},
+		{"true && 5", 5},
+		{"false && 5", false},
+		{"true || 5", true},
+		{"false || 5", 5},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+
+		switch expected := tt.expected.(type) {
+		case int:
+			testIntegerObject(t, evaluated, int64(expected))
+		case bool:
+			testBooleanObject(t, evaluated, expected)
+		}
+	}
 }
 
 func TestBangOperator(t *testing.T) {

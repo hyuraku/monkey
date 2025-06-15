@@ -95,6 +95,32 @@ func (c *Compiler) Compile(node ast.Node) error {
 			c.emit(code.OpGreaterThanEqual)
 			return nil
 		}
+		if node.Operator == "&&" {
+			err := c.Compile(node.Left)
+			if err != nil {
+				return err
+			}
+			jumpPos := c.emit(code.OpLogicalAnd, 9999)
+			err = c.Compile(node.Right)
+			if err != nil {
+				return err
+			}
+			c.changeOperand(jumpPos, len(c.currentInstructions()))
+			return nil
+		}
+		if node.Operator == "||" {
+			err := c.Compile(node.Left)
+			if err != nil {
+				return err
+			}
+			jumpPos := c.emit(code.OpLogicalOr, 9999)
+			err = c.Compile(node.Right)
+			if err != nil {
+				return err
+			}
+			c.changeOperand(jumpPos, len(c.currentInstructions()))
+			return nil
+		}
 		err := c.Compile(node.Left)
 		if err != nil {
 			return err

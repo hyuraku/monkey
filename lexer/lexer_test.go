@@ -26,6 +26,8 @@ if (5 < 10) {
 10 != 9;
 5 <= 10;
 15 >= 10;
+true && false;
+true || false;
 
 "foobar"
 "foo bar"
@@ -119,6 +121,14 @@ if (5 < 10) {
 		{token.INT, "15"},
 		{token.GTE, ">="},
 		{token.INT, "10"},
+		{token.SEMICOLON, ";"},
+		{token.TRUE, "true"},
+		{token.AND, "&&"},
+		{token.FALSE, "false"},
+		{token.SEMICOLON, ";"},
+		{token.TRUE, "true"},
+		{token.OR, "||"},
+		{token.FALSE, "false"},
 		{token.SEMICOLON, ";"},
 		{token.STRING, "foobar"},
 		{token.STRING, "foo bar"},

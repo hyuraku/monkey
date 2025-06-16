@@ -28,9 +28,13 @@ Once the REPL starts, you can enter expressions in the Monkey language:
 >> let y = 5;
 >> x + y;
 15
+>> x += 3;  // Assignment operators
+13
+>> y *= 2;
+10
 >> let add = fn(a, b) { a + b };
 >> add(x, y);
-15
+23
 >> let arr = [1, 2, 3];
 >> arr[1];
 2
@@ -58,6 +62,7 @@ Once the REPL starts, you can enter expressions in the Monkey language:
 ### Data Types
 
 - Integers: `5`, `10`, `-5`
+- Float: `3.14`, `-5.2`
 - Booleans: `true`, `false`
 - Strings: `"hello world"`
 - Arrays: `[1, 2, 3]`
@@ -67,8 +72,9 @@ Once the REPL starts, you can enter expressions in the Monkey language:
 ### Operators
 
 - Arithmetic operators: `+`, `-`, `*`, `/`
-- Comparison operators: `==`, `!=`, `<`, `>`
-- Logical operators: `!` (negation)
+- Assignment operators: `+=`, `-=`, `*=`, `/=`
+- Comparison operators: `==`, `!=`, `<`, `>`, `<=`, `>=`
+- Logical operators: `!` (negation), `&&`, `||`
 
 ### Control Flow
 
@@ -78,6 +84,7 @@ Once the REPL starts, you can enter expressions in the Monkey language:
 ### Bindings
 
 - Variables: `let x = 5;`
+- Assignment operators: `x += 10;`, `y -= 5;`, `z *= 2;`, `w /= 3;`
 - Functions: `let add = fn(x, y) { x + y };`
 
 ### Built-in Functions
@@ -87,6 +94,7 @@ Once the REPL starts, you can enter expressions in the Monkey language:
 - `last()`: Returns the last element of an array
 - `rest()`: Returns the rest of the array excluding the first element
 - `push()`: Adds an element to an array
+- `pop()`: Removes and returns the last element of an array
 - `puts()`: Outputs a value to standard output
 
 ## Testing

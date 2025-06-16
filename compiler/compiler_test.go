@@ -1190,58 +1190,58 @@ func TestAssignmentOperators(t *testing.T) {
 			input:             "let x = 5; x += 3; x;",
 			expectedConstants: []interface{}{5, 3},
 			expectedInstructions: []code.Instructions{
-				code.Make(code.OpConstant, 0),    // load 5
-				code.Make(code.OpSetGlobal, 0),   // set x = 5
-				code.Make(code.OpGetGlobal, 0),   // get x (for +=)
-				code.Make(code.OpConstant, 1),    // load 3
-				code.Make(code.OpAdd),            // add
-				code.Make(code.OpSetGlobal, 0),   // store result in x
-				code.Make(code.OpGetGlobal, 0),   // load x for expression result
-				code.Make(code.OpPop),            // pop assignment expression result
-				code.Make(code.OpGetGlobal, 0),   // get x for final value
-				code.Make(code.OpPop),            // pop final value
+				code.Make(code.OpConstant, 0),  // load 5
+				code.Make(code.OpSetGlobal, 0), // set x = 5
+				code.Make(code.OpGetGlobal, 0), // get x (for +=)
+				code.Make(code.OpConstant, 1),  // load 3
+				code.Make(code.OpAdd),          // add
+				code.Make(code.OpSetGlobal, 0), // store result in x
+				code.Make(code.OpGetGlobal, 0), // load x for expression result
+				code.Make(code.OpPop),          // pop assignment expression result
+				code.Make(code.OpGetGlobal, 0), // get x for final value
+				code.Make(code.OpPop),          // pop final value
 			},
 		},
 		{
 			input:             "let y = 10; y -= 4;",
 			expectedConstants: []interface{}{10, 4},
 			expectedInstructions: []code.Instructions{
-				code.Make(code.OpConstant, 0),    // load 10
-				code.Make(code.OpSetGlobal, 0),   // set y = 10
-				code.Make(code.OpGetGlobal, 0),   // get y (for -=)
-				code.Make(code.OpConstant, 1),    // load 4
-				code.Make(code.OpSub),            // subtract
-				code.Make(code.OpSetGlobal, 0),   // store result in y
-				code.Make(code.OpGetGlobal, 0),   // load y for expression result
-				code.Make(code.OpPop),            // pop assignment expression result
+				code.Make(code.OpConstant, 0),  // load 10
+				code.Make(code.OpSetGlobal, 0), // set y = 10
+				code.Make(code.OpGetGlobal, 0), // get y (for -=)
+				code.Make(code.OpConstant, 1),  // load 4
+				code.Make(code.OpSub),          // subtract
+				code.Make(code.OpSetGlobal, 0), // store result in y
+				code.Make(code.OpGetGlobal, 0), // load y for expression result
+				code.Make(code.OpPop),          // pop assignment expression result
 			},
 		},
 		{
 			input:             "let z = 2; z *= 3;",
 			expectedConstants: []interface{}{2, 3},
 			expectedInstructions: []code.Instructions{
-				code.Make(code.OpConstant, 0),    // load 2
-				code.Make(code.OpSetGlobal, 0),   // set z = 2
-				code.Make(code.OpGetGlobal, 0),   // get z (for *=)
-				code.Make(code.OpConstant, 1),    // load 3
-				code.Make(code.OpMul),            // multiply
-				code.Make(code.OpSetGlobal, 0),   // store result in z
-				code.Make(code.OpGetGlobal, 0),   // load z for expression result
-				code.Make(code.OpPop),            // pop assignment expression result
+				code.Make(code.OpConstant, 0),  // load 2
+				code.Make(code.OpSetGlobal, 0), // set z = 2
+				code.Make(code.OpGetGlobal, 0), // get z (for *=)
+				code.Make(code.OpConstant, 1),  // load 3
+				code.Make(code.OpMul),          // multiply
+				code.Make(code.OpSetGlobal, 0), // store result in z
+				code.Make(code.OpGetGlobal, 0), // load z for expression result
+				code.Make(code.OpPop),          // pop assignment expression result
 			},
 		},
 		{
 			input:             "let w = 8; w /= 2;",
 			expectedConstants: []interface{}{8, 2},
 			expectedInstructions: []code.Instructions{
-				code.Make(code.OpConstant, 0),    // load 8
-				code.Make(code.OpSetGlobal, 0),   // set w = 8
-				code.Make(code.OpGetGlobal, 0),   // get w (for /=)
-				code.Make(code.OpConstant, 1),    // load 2
-				code.Make(code.OpDiv),            // divide
-				code.Make(code.OpSetGlobal, 0),   // store result in w
-				code.Make(code.OpGetGlobal, 0),   // load w for expression result
-				code.Make(code.OpPop),            // pop assignment expression result
+				code.Make(code.OpConstant, 0),  // load 8
+				code.Make(code.OpSetGlobal, 0), // set w = 8
+				code.Make(code.OpGetGlobal, 0), // get w (for /=)
+				code.Make(code.OpConstant, 1),  // load 2
+				code.Make(code.OpDiv),          // divide
+				code.Make(code.OpSetGlobal, 0), // store result in w
+				code.Make(code.OpGetGlobal, 0), // load w for expression result
+				code.Make(code.OpPop),          // pop assignment expression result
 			},
 		},
 	}

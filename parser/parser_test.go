@@ -884,10 +884,10 @@ func TestFloat(t *testing.T) {
 
 func TestAssignmentExpressions(t *testing.T) {
 	tests := []struct {
-		input          string
-		expectedIdent  string
-		expectedOp     string
-		expectedValue  interface{}
+		input         string
+		expectedIdent string
+		expectedOp    string
+		expectedValue interface{}
 	}{
 		{"x += 5;", "x", "+=", 5},
 		{"y -= 10;", "y", "-=", 10},
@@ -931,7 +931,6 @@ func TestAssignmentExpressions(t *testing.T) {
 		}
 	}
 }
-
 
 func checkParserErrors(t *testing.T, p *Parser) {
 	errors := p.Errors()

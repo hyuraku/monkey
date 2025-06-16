@@ -558,20 +558,20 @@ func (p *Parser) isAssignmentOperator(tokenType token.TokenType) bool {
 func (p *Parser) parseAssignmentExpression() ast.Expression {
 	// Current token should be the identifier
 	name := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
-	
+
 	// Move to the assignment operator
 	p.nextToken()
-	
+
 	assignExpr := &ast.AssignmentExpression{
 		Token:    p.curToken,
 		Name:     name,
 		Operator: p.curToken.Literal,
 	}
-	
+
 	// Move to the value expression
 	p.nextToken()
-	
+
 	assignExpr.Value = p.parseExpression(LOWEST)
-	
+
 	return assignExpr
 }

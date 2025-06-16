@@ -46,7 +46,7 @@ const (
 	RETURN   = "RETURN"
 	EQ       = "=="
 	NOT_EQ   = "!="
-	
+
 	// 代入演算子
 	PLUS_ASSIGN     = "+="
 	MINUS_ASSIGN    = "-="

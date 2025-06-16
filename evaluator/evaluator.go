@@ -494,7 +494,7 @@ func evalAssignmentExpression(node *ast.AssignmentExpression, env *object.Enviro
 
 	// Set the new value in the environment
 	env.Set(node.Name.Value, newVal)
-	
+
 	// Return the new value
 	return newVal
 }

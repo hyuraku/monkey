@@ -338,7 +338,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 
 		// Load current value of variable
 		c.loadSymbol(symbol)
-		
+
 		// Compile the right-hand side expression
 		err := c.Compile(node.Value)
 		if err != nil {
@@ -365,7 +365,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 		} else {
 			c.emit(code.OpSetLocal, symbol.Index)
 		}
-		
+
 		// For assignment expressions, we need to push the result value onto the stack
 		// since assignment expressions should return their assigned value
 		c.loadSymbol(symbol)

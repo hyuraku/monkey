@@ -785,3 +785,17 @@ func TestIntegerAndFloatArithmetic(t *testing.T) {
 	}
 	runVmTests(t, tests)
 }
+
+func TestAssignmentOperators(t *testing.T) {
+	tests := []vmTestCase{
+		{"let x = 5; x += 3; x;", 8},
+		{"let y = 10; y -= 4; y;", 6},
+		{"let z = 2; z *= 3; z;", 6},
+		{"let w = 8; w /= 2; w;", 4},
+		{"let a = 1; a += 2; a += 3; a;", 6},
+		{"let b = 100; b -= 10; b -= 20; b;", 70},
+		{"let c = 5; c *= 2; c /= 5; c;", 2},
+		{"let d = 10; d += 5; d;", 15},
+	}
+	runVmTests(t, tests)
+}

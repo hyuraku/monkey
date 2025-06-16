@@ -882,6 +882,57 @@ func TestFloat(t *testing.T) {
 	}
 }
 
+func TestAssignmentExpressions(t *testing.T) {
+	tests := []struct {
+		input          string
+		expectedIdent  string
+		expectedOp     string
+		expectedValue  interface{}
+	}{
+		{"x += 5;", "x", "+=", 5},
+		{"y -= 10;", "y", "-=", 10},
+		{"z *= 3;", "z", "*=", 3},
+		{"w /= 2;", "w", "/=", 2},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		if len(program.Statements) != 1 {
+			t.Fatalf("program has not enough statements. got=%d",
+				len(program.Statements))
+		}
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T",
+				program.Statements[0])
+		}
+
+		exp, ok := stmt.Expression.(*ast.AssignmentExpression)
+		if !ok {
+			t.Fatalf("stmt.Expression is not ast.AssignmentExpression. got=%T",
+				stmt.Expression)
+		}
+
+		if exp.Name.Value != tt.expectedIdent {
+			t.Errorf("exp.Name.Value not %s. got=%s", tt.expectedIdent, exp.Name.Value)
+		}
+
+		if exp.Operator != tt.expectedOp {
+			t.Errorf("exp.Operator not %s. got=%s", tt.expectedOp, exp.Operator)
+		}
+
+		if !testIntegerLiteral(t, exp.Value, int64(tt.expectedValue.(int))) {
+			return
+		}
+	}
+}
+
+
 func checkParserErrors(t *testing.T, p *Parser) {
 	errors := p.Errors()
 	if len(errors) == 0 {

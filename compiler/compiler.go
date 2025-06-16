@@ -330,6 +330,45 @@ func (c *Compiler) Compile(node ast.Node) error {
 		}
 
 		c.emit(code.OpCall, len(node.Arguments))
+	case *ast.AssignmentExpression:
+		symbol, ok := c.symbolTable.Resolve(node.Name.Value)
+		if !ok {
+			return fmt.Errorf("undefined variable %s", node.Name.Value)
+		}
+
+		// Load current value of variable
+		c.loadSymbol(symbol)
+		
+		// Compile the right-hand side expression
+		err := c.Compile(node.Value)
+		if err != nil {
+			return err
+		}
+
+		// Emit the operation
+		switch node.Operator {
+		case "+=":
+			c.emit(code.OpAdd)
+		case "-=":
+			c.emit(code.OpSub)
+		case "*=":
+			c.emit(code.OpMul)
+		case "/=":
+			c.emit(code.OpDiv)
+		default:
+			return fmt.Errorf("unknown assignment operator %s", node.Operator)
+		}
+
+		// Store the result back to the variable
+		if symbol.Scope == GlobalScope {
+			c.emit(code.OpSetGlobal, symbol.Index)
+		} else {
+			c.emit(code.OpSetLocal, symbol.Index)
+		}
+		
+		// For assignment expressions, we need to push the result value onto the stack
+		// since assignment expressions should return their assigned value
+		c.loadSymbol(symbol)
 	}
 	return nil
 }

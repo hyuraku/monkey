@@ -185,7 +185,12 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	stmt := &ast.ExpressionStatement{Token: p.curToken}
 
-	stmt.Expression = p.parseExpression(LOWEST)
+	// Check for assignment expression pattern: identifier op= expression
+	if p.curTokenIs(token.IDENT) && p.isAssignmentOperator(p.peekToken.Type) {
+		stmt.Expression = p.parseAssignmentExpression()
+	} else {
+		stmt.Expression = p.parseExpression(LOWEST)
+	}
 
 	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
@@ -537,4 +542,36 @@ func (p *Parser) parseHashLiteral() ast.Expression {
 	}
 
 	return hash
+}
+
+// isAssignmentOperator checks if the token is an assignment operator
+func (p *Parser) isAssignmentOperator(tokenType token.TokenType) bool {
+	switch tokenType {
+	case token.PLUS_ASSIGN, token.MINUS_ASSIGN, token.ASTERISK_ASSIGN, token.SLASH_ASSIGN:
+		return true
+	default:
+		return false
+	}
+}
+
+// parseAssignmentExpression parses assignment expressions like x += 1
+func (p *Parser) parseAssignmentExpression() ast.Expression {
+	// Current token should be the identifier
+	name := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+	
+	// Move to the assignment operator
+	p.nextToken()
+	
+	assignExpr := &ast.AssignmentExpression{
+		Token:    p.curToken,
+		Name:     name,
+		Operator: p.curToken.Literal,
+	}
+	
+	// Move to the value expression
+	p.nextToken()
+	
+	assignExpr.Value = p.parseExpression(LOWEST)
+	
+	return assignExpr
 }

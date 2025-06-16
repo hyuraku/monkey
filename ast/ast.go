@@ -101,6 +101,31 @@ func (rs *ReturnStatement) String() string {
 	return out.String()
 }
 
+type AssignmentExpression struct {
+	Token    token.Token // The assignment operator token (+=, -=, *=, /=)
+	Name     *Identifier
+	Operator string
+	Value    Expression
+}
+
+func (ae *AssignmentExpression) expressionNode()      {}
+func (ae *AssignmentExpression) TokenLiteral() string { return ae.Token.Literal }
+
+func (ae *AssignmentExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(ae.Name.String())
+	out.WriteString(" ")
+	out.WriteString(ae.Operator)
+	out.WriteString(" ")
+
+	if ae.Value != nil {
+		out.WriteString(ae.Value.String())
+	}
+
+	return out.String()
+}
+
 type ExpressionStatement struct {
 	Token      token.Token // The first token of the expression
 	Expression Expression

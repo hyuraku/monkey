@@ -96,6 +96,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return evalHashLiteral(node, env)
 	case *ast.FloatLiteral:
 		return &object.Float{Value: node.Value}
+	case *ast.AssignmentExpression:
+		return evalAssignmentExpression(node, env)
 	}
 
 	return nil
@@ -456,4 +458,43 @@ func evalLogicalInfixExpression(node *ast.InfixExpression, env *object.Environme
 	default:
 		return newError("unknown logical operator: %s", node.Operator)
 	}
+}
+
+func evalAssignmentExpression(node *ast.AssignmentExpression, env *object.Environment) object.Object {
+	// Get the current value of the identifier
+	currentVal, exists := env.Get(node.Name.Value)
+	if !exists {
+		return newError("identifier not found: " + node.Name.Value)
+	}
+
+	// Evaluate the right-hand side expression
+	rightVal := Eval(node.Value, env)
+	if isError(rightVal) {
+		return rightVal
+	}
+
+	// Perform the assignment operation
+	var newVal object.Object
+	switch node.Operator {
+	case "+=":
+		newVal = evalInflixExpression("+", currentVal, rightVal)
+	case "-=":
+		newVal = evalInflixExpression("-", currentVal, rightVal)
+	case "*=":
+		newVal = evalInflixExpression("*", currentVal, rightVal)
+	case "/=":
+		newVal = evalInflixExpression("/", currentVal, rightVal)
+	default:
+		return newError("unknown assignment operator: %s", node.Operator)
+	}
+
+	if isError(newVal) {
+		return newVal
+	}
+
+	// Set the new value in the environment
+	env.Set(node.Name.Value, newVal)
+
+	// Return the new value
+	return newVal
 }

@@ -47,6 +47,12 @@ const (
 	EQ       = "=="
 	NOT_EQ   = "!="
 
+	// 代入演算子
+	PLUS_ASSIGN     = "+="
+	MINUS_ASSIGN    = "-="
+	ASTERISK_ASSIGN = "*="
+	SLASH_ASSIGN    = "/="
+
 	STRING = "STRING"
 
 	LBRACKET = "["

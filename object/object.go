@@ -30,6 +30,9 @@ const (
 	CLOSURE_OBJ = "CLOSURE"
 
 	FLOAT_OBJ = "FLOAT"
+
+	BREAK_OBJ    = "BREAK"
+	CONTINUE_OBJ = "CONTINUE"
 )
 
 type ObjectType string
@@ -215,3 +218,13 @@ type Float struct {
 
 func (f *Float) Type() ObjectType { return FLOAT_OBJ }
 func (f *Float) Inspect() string  { return fmt.Sprintf("%f", f.Value) }
+
+type Break struct{}
+
+func (b *Break) Type() ObjectType { return BREAK_OBJ }
+func (b *Break) Inspect() string  { return "break" }
+
+type Continue struct{}
+
+func (c *Continue) Type() ObjectType { return CONTINUE_OBJ }
+func (c *Continue) Inspect() string  { return "continue" }

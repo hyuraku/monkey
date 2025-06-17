@@ -135,6 +135,14 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseLetStatement()
 	case token.RETURN:
 		return p.parseReturnStatement()
+	case token.FOR:
+		return p.parseForStatement()
+	case token.WHILE:
+		return p.parseWhileStatement()
+	case token.BREAK:
+		return p.parseBreakStatement()
+	case token.CONTINUE:
+		return p.parseContinueStatement()
 	default:
 		return p.parseExpressionStatement()
 	}
@@ -574,4 +582,99 @@ func (p *Parser) parseAssignmentExpression() ast.Expression {
 	assignExpr.Value = p.parseExpression(LOWEST)
 
 	return assignExpr
+}
+
+func (p *Parser) parseForStatement() *ast.ForStatement {
+	stmt := &ast.ForStatement{Token: p.curToken}
+
+	if !p.expectPeek(token.LPAREN) {
+		return nil
+	}
+
+	// Parse initialization (optional)
+	if !p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+		stmt.Init = p.parseStatement()
+		// Skip semicolon if it exists after the statement
+		if p.peekTokenIs(token.SEMICOLON) {
+			p.nextToken()
+		}
+	} else {
+		p.nextToken() // consume the semicolon
+	}
+
+	// Parse condition (optional)
+	if !p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+		stmt.Condition = p.parseExpression(LOWEST)
+	}
+
+	if !p.expectPeek(token.SEMICOLON) {
+		return nil
+	}
+
+	// Parse update (optional)
+	if !p.peekTokenIs(token.RPAREN) {
+		p.nextToken()
+		stmt.Update = p.parseStatement()
+		// Skip semicolon if it exists after the statement
+		if p.peekTokenIs(token.SEMICOLON) {
+			p.nextToken()
+		}
+	}
+
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	stmt.Body = p.parseBlockStatement()
+
+	return stmt
+}
+
+func (p *Parser) parseWhileStatement() *ast.WhileStatement {
+	stmt := &ast.WhileStatement{Token: p.curToken}
+
+	if !p.expectPeek(token.LPAREN) {
+		return nil
+	}
+
+	p.nextToken()
+	stmt.Condition = p.parseExpression(LOWEST)
+
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	stmt.Body = p.parseBlockStatement()
+
+	return stmt
+}
+
+func (p *Parser) parseBreakStatement() *ast.BreakStatement {
+	stmt := &ast.BreakStatement{Token: p.curToken}
+
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
+	return stmt
+}
+
+func (p *Parser) parseContinueStatement() *ast.ContinueStatement {
+	stmt := &ast.ContinueStatement{Token: p.curToken}
+
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
+	return stmt
 }

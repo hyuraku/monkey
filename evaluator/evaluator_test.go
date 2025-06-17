@@ -591,3 +591,20 @@ func TestAssignmentExpressions(t *testing.T) {
 		testIntegerObject(t, evaluated, tt.expected)
 	}
 }
+
+func TestLoopStatements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{`let sum = 0; for (let i = 1; i <= 3; i += 1) { sum += i; } sum;`, 6},
+		{`let sum = 0; let i = 1; while (i <= 3) { sum += i; i += 1; } sum;`, 6},
+		{`let sum = 0; for (let i = 1; i <= 5; i += 1) { if (i == 3) { continue; } sum += i; } sum;`, 12},
+		{`let sum = 0; for (let i = 1; i <= 10; i += 1) { if (i == 4) { break; } sum += i; } sum;`, 6},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testIntegerObject(t, evaluated, tt.expected)
+	}
+}

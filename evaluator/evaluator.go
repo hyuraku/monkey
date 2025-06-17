@@ -98,6 +98,14 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return &object.Float{Value: node.Value}
 	case *ast.AssignmentExpression:
 		return evalAssignmentExpression(node, env)
+	case *ast.ForStatement:
+		return evalForStatement(node, env)
+	case *ast.WhileStatement:
+		return evalWhileStatement(node, env)
+	case *ast.BreakStatement:
+		return &object.Break{}
+	case *ast.ContinueStatement:
+		return &object.Continue{}
 	}
 
 	return nil
@@ -283,7 +291,8 @@ func evalBlockStatement(block *ast.BlockStatement, env *object.Environment) obje
 
 		if result != nil {
 			rt := result.Type()
-			if rt == object.RETURN_VALUE_OBJ || rt == object.ERROR_OBJ {
+			if rt == object.RETURN_VALUE_OBJ || rt == object.ERROR_OBJ ||
+				rt == object.BREAK_OBJ || rt == object.CONTINUE_OBJ {
 				return result
 			}
 		}
@@ -497,4 +506,96 @@ func evalAssignmentExpression(node *ast.AssignmentExpression, env *object.Enviro
 
 	// Return the new value
 	return newVal
+}
+
+func evalForStatement(node *ast.ForStatement, env *object.Environment) object.Object {
+	var result object.Object = NULL
+
+	// Create new environment for loop scope
+	loopEnv := object.NewEnclosedEnvironment(env)
+
+	// Execute initialization
+	if node.Init != nil {
+		initResult := Eval(node.Init, loopEnv)
+		if isError(initResult) {
+			return initResult
+		}
+	}
+
+	for {
+		// Check condition (if exists)
+		if node.Condition != nil {
+			condition := Eval(node.Condition, loopEnv)
+			if isError(condition) {
+				return condition
+			}
+			if !isTruthy(condition) {
+				break
+			}
+		}
+
+		// Execute body
+		result = evalBlockStatement(node.Body, loopEnv)
+
+		// Handle break and continue
+		if result != nil {
+			if result.Type() == object.BREAK_OBJ {
+				result = NULL
+				break
+			}
+			if result.Type() == object.CONTINUE_OBJ {
+				result = NULL
+				// Continue to update statement
+			} else if result.Type() == object.RETURN_VALUE_OBJ || result.Type() == object.ERROR_OBJ {
+				return result
+			}
+		}
+
+		// Execute update
+		if node.Update != nil {
+			updateResult := Eval(node.Update, loopEnv)
+			if isError(updateResult) {
+				return updateResult
+			}
+		}
+	}
+
+	return result
+}
+
+func evalWhileStatement(node *ast.WhileStatement, env *object.Environment) object.Object {
+	var result object.Object = NULL
+
+	// Create new environment for loop scope
+	loopEnv := object.NewEnclosedEnvironment(env)
+
+	for {
+		// Check condition
+		condition := Eval(node.Condition, loopEnv)
+		if isError(condition) {
+			return condition
+		}
+		if !isTruthy(condition) {
+			break
+		}
+
+		// Execute body
+		result = evalBlockStatement(node.Body, loopEnv)
+
+		// Handle break and continue
+		if result != nil {
+			if result.Type() == object.BREAK_OBJ {
+				result = NULL
+				break
+			}
+			if result.Type() == object.CONTINUE_OBJ {
+				result = NULL
+				continue
+			} else if result.Type() == object.RETURN_VALUE_OBJ || result.Type() == object.ERROR_OBJ {
+				return result
+			}
+		}
+	}
+
+	return result
 }

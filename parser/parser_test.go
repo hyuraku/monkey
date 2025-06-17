@@ -944,3 +944,32 @@ func checkParserErrors(t *testing.T, p *Parser) {
 	}
 	t.FailNow()
 }
+
+func TestLoopStatements(t *testing.T) {
+	tests := []struct {
+		input        string
+		expectedType string
+	}{
+		{"for (let i = 0; i < 3; i += 1) { puts(i); }", "*ast.ForStatement"},
+		{"while (x > 0) { x -= 1; }", "*ast.WhileStatement"},
+		{"break;", "*ast.BreakStatement"},
+		{"continue;", "*ast.ContinueStatement"},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		if len(program.Statements) != 1 {
+			t.Fatalf("program has not enough statements. got=%d",
+				len(program.Statements))
+		}
+
+		stmt := program.Statements[0]
+		if fmt.Sprintf("%T", stmt) != tt.expectedType {
+			t.Errorf("statement is not %s. got=%T", tt.expectedType, stmt)
+		}
+	}
+}

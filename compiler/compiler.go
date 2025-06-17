@@ -369,6 +369,14 @@ func (c *Compiler) Compile(node ast.Node) error {
 		// For assignment expressions, we need to push the result value onto the stack
 		// since assignment expressions should return their assigned value
 		c.loadSymbol(symbol)
+	case *ast.ForStatement:
+		return c.compileForStatement(node)
+	case *ast.WhileStatement:
+		return c.compileWhileStatement(node)
+	case *ast.BreakStatement:
+		return fmt.Errorf("break statement not yet supported in compiler")
+	case *ast.ContinueStatement:
+		return fmt.Errorf("continue statement not yet supported in compiler")
 	}
 	return nil
 }
@@ -489,4 +497,82 @@ func (c *Compiler) loadSymbol(s Symbol) {
 	case FunctionScope:
 		c.emit(code.OpCurrentClosure)
 	}
+}
+
+func (c *Compiler) compileForStatement(node *ast.ForStatement) error {
+	// Compile initialization
+	if node.Init != nil {
+		err := c.Compile(node.Init)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Loop start position
+	loopStart := len(c.currentInstructions())
+
+	// Compile condition (if exists)
+	var conditionJump int
+	if node.Condition != nil {
+		err := c.Compile(node.Condition)
+		if err != nil {
+			return err
+		}
+		// Jump out of loop if condition is false
+		conditionJump = c.emit(code.OpJumpNotTruthy, 9999) // placeholder
+	}
+
+	// Compile body
+	err := c.Compile(node.Body)
+	if err != nil {
+		return err
+	}
+
+	// Compile update
+	if node.Update != nil {
+		err := c.Compile(node.Update)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Jump back to start
+	c.emit(code.OpJump, loopStart)
+
+	// Fix the condition jump position
+	if node.Condition != nil {
+		afterLoopPos := len(c.currentInstructions())
+		c.changeOperand(conditionJump, afterLoopPos)
+	}
+
+	return nil
+}
+
+func (c *Compiler) compileWhileStatement(node *ast.WhileStatement) error {
+	// Loop start position
+	loopStart := len(c.currentInstructions())
+
+	// Compile condition
+	err := c.Compile(node.Condition)
+	if err != nil {
+		return err
+	}
+
+	// Jump out of loop if condition is false
+	conditionJump := c.emit(code.OpJumpNotTruthy, 9999) // placeholder
+
+	// Compile body
+	err = c.Compile(node.Body)
+	if err != nil {
+		return err
+	}
+
+	// Jump back to start
+	c.emit(code.OpJump, loopStart)
+
+	// Fix the condition jump position
+	afterLoopPos := len(c.currentInstructions())
+	c.changeOperand(conditionJump, afterLoopPos)
+
+	return nil
 }

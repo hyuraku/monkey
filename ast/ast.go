@@ -384,3 +384,77 @@ type FloatLiteral struct {
 func (fl *FloatLiteral) expressionNode()      {}
 func (fl *FloatLiteral) TokenLiteral() string { return fl.Token.Literal }
 func (fl *FloatLiteral) String() string       { return fl.Token.Literal }
+
+type ForStatement struct {
+	Token     token.Token // The 'for' token
+	Init      Statement   // Initialization statement (optional)
+	Condition Expression  // Loop condition (optional)
+	Update    Statement   // Update statement (optional)
+	Body      *BlockStatement
+}
+
+func (fs *ForStatement) statementNode()       {}
+func (fs *ForStatement) TokenLiteral() string { return fs.Token.Literal }
+
+func (fs *ForStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("for (")
+	if fs.Init != nil {
+		out.WriteString(fs.Init.String())
+	}
+	out.WriteString("; ")
+	if fs.Condition != nil {
+		out.WriteString(fs.Condition.String())
+	}
+	out.WriteString("; ")
+	if fs.Update != nil {
+		out.WriteString(fs.Update.String())
+	}
+	out.WriteString(") ")
+	out.WriteString(fs.Body.String())
+
+	return out.String()
+}
+
+type WhileStatement struct {
+	Token     token.Token // The 'while' token
+	Condition Expression
+	Body      *BlockStatement
+}
+
+func (ws *WhileStatement) statementNode()       {}
+func (ws *WhileStatement) TokenLiteral() string { return ws.Token.Literal }
+
+func (ws *WhileStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("while (")
+	out.WriteString(ws.Condition.String())
+	out.WriteString(") ")
+	out.WriteString(ws.Body.String())
+
+	return out.String()
+}
+
+type BreakStatement struct {
+	Token token.Token // The 'break' token
+}
+
+func (bs *BreakStatement) statementNode()       {}
+func (bs *BreakStatement) TokenLiteral() string { return bs.Token.Literal }
+
+func (bs *BreakStatement) String() string {
+	return bs.Token.Literal + ";"
+}
+
+type ContinueStatement struct {
+	Token token.Token // The 'continue' token
+}
+
+func (cs *ContinueStatement) statementNode()       {}
+func (cs *ContinueStatement) TokenLiteral() string { return cs.Token.Literal }
+
+func (cs *ContinueStatement) String() string {
+	return cs.Token.Literal + ";"
+}

@@ -279,6 +279,9 @@ func (vm *VM) push(o object.Object) error {
 }
 
 func (vm *VM) pop() object.Object {
+	if vm.sp == 0 {
+		return nil
+	}
 	o := vm.stack[vm.sp-1]
 	vm.sp--
 	return o
@@ -312,6 +315,9 @@ func (vm *VM) executeBinaryOperation(op code.Opcode) error {
 }
 
 func (vm *VM) executeBinaryIntegerOperation(op code.Opcode, left, right object.Object) error {
+	if left == nil || right == nil {
+		return fmt.Errorf("nil operand in binary integer operation")
+	}
 	leftValue := left.(*object.Integer).Value
 	rightValue := right.(*object.Integer).Value
 
@@ -334,6 +340,9 @@ func (vm *VM) executeBinaryIntegerOperation(op code.Opcode, left, right object.O
 }
 
 func (vm *VM) executeBinaryFloatOperation(op code.Opcode, left, right object.Object) error {
+	if left == nil || right == nil {
+		return fmt.Errorf("nil operand in binary float operation")
+	}
 	leftValue := left.(*object.Float).Value
 	rightValue := right.(*object.Float).Value
 	var result float64
@@ -386,6 +395,9 @@ func (vm *VM) executeComparison(op code.Opcode) error {
 }
 
 func (vm *VM) executeIntegerComparison(op code.Opcode, left, right object.Object) error {
+	if left == nil || right == nil {
+		return fmt.Errorf("nil operand in integer comparison")
+	}
 	leftValue := left.(*object.Integer).Value
 	rightValue := right.(*object.Integer).Value
 
@@ -426,6 +438,9 @@ func (vm *VM) executeBangOperator() error {
 
 func (vm *VM) executeMinusOperator() error {
 	operand := vm.pop()
+	if operand == nil {
+		return fmt.Errorf("nil operand in minus operation")
+	}
 	if operand.Type() != object.INTEGER_OBJ {
 		return fmt.Errorf("unsupported type for negation: %s", operand.Type())
 	}
@@ -489,6 +504,9 @@ func isTruthy(obj object.Object) bool {
 }
 
 func (vm *VM) executeArrayIndex(array, index object.Object) error {
+	if array == nil || index == nil {
+		return fmt.Errorf("nil operand in array index operation")
+	}
 	arrayObject := array.(*object.Array)
 	i := index.(*object.Integer).Value
 	max := int64(len(arrayObject.Elements) - 1)
@@ -499,6 +517,9 @@ func (vm *VM) executeArrayIndex(array, index object.Object) error {
 }
 
 func (vm *VM) executeHashIndex(hash, index object.Object) error {
+	if hash == nil || index == nil {
+		return fmt.Errorf("nil operand in hash index operation")
+	}
 	hashObject := hash.(*object.Hash)
 	key, ok := index.(object.Hashable)
 	if !ok {
@@ -512,6 +533,9 @@ func (vm *VM) executeHashIndex(hash, index object.Object) error {
 }
 
 func (vm *VM) currentFrame() *Frame {
+	if vm.frameIndex == 0 {
+		return nil
+	}
 	return vm.frames[vm.frameIndex-1]
 }
 

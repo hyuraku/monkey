@@ -20,5 +20,8 @@ func NewFrame(cl *object.Closure, basePointer int) *Frame {
 }
 
 func (f *Frame) Instructions() code.Instructions {
+	if f.cl == nil || f.cl.Fn == nil {
+		return nil
+	}
 	return f.cl.Fn.Instructions
 }

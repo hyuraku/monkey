@@ -42,6 +42,9 @@ var Builtins = []struct {
 				return newError("wrong number of arguments. got=%d, want=1",
 					len(args))
 			}
+			if args[0] == nil {
+				return newError("argument to `first` cannot be nil")
+			}
 			if args[0].Type() != ARRAY_OBJ {
 				return newError("argument to `first` must be ARRAY, got %s",
 					args[0].Type())
@@ -64,6 +67,9 @@ var Builtins = []struct {
 				return newError("wrong number of arguments. got=%d, want=1",
 					len(args))
 			}
+			if args[0] == nil {
+				return newError("argument to `last` cannot be nil")
+			}
 			if args[0].Type() != ARRAY_OBJ {
 				return newError("argument to `last` must be ARRAY, got %s",
 					args[0].Type())
@@ -85,6 +91,9 @@ var Builtins = []struct {
 			if len(args) != 1 {
 				return newError("wrong number of arguments. got=%d, want=1",
 					len(args))
+			}
+			if args[0] == nil {
+				return newError("argument to `rest` cannot be nil")
 			}
 			if args[0].Type() != ARRAY_OBJ {
 				return newError("argument to `rest` must be ARRAY, got %s",
@@ -110,6 +119,9 @@ var Builtins = []struct {
 				return newError("wrong number of arguments. got=%d, want=2",
 					len(args))
 			}
+			if args[0] == nil {
+				return newError("argument to `push` cannot be nil")
+			}
 			if args[0].Type() != ARRAY_OBJ {
 				return newError("argument to `push` must be ARRAY, got %s",
 					args[0].Type())
@@ -132,6 +144,9 @@ var Builtins = []struct {
 			if len(args) != 1 {
 				return newError("wrong number of arguments. got=%d, want=1",
 					len(args))
+			}
+			if args[0] == nil {
+				return newError("argument to `pop` cannot be nil")
 			}
 			if args[0].Type() != ARRAY_OBJ {
 				return newError("argument to `pop` must be ARRAY, got %s",

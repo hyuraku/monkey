@@ -65,6 +65,9 @@ const (
 	RBRACKET = "]"
 
 	COLON = ":"
+
+	// コメント
+	COMMENT = "COMMENT"
 )
 
 var keywords = map[string]TokenType{

@@ -43,6 +43,16 @@ func (l *Lexer) NextToken() token.Token {
 
 	l.skipWhitespace()
 
+	// Skip comments at the beginning of token processing
+	for (l.ch == '/' && l.peekChar() == '/') || (l.ch == '/' && l.peekChar() == '*' && l.hasValidMultiLineComment()) {
+		if l.ch == '/' && l.peekChar() == '/' {
+			l.readSingleLineComment()
+		} else if l.ch == '/' && l.peekChar() == '*' {
+			l.readMultiLineComment()
+		}
+		l.skipWhitespace()
+	}
+
 	switch l.ch {
 	case '=':
 		if l.peekChar() == '=' {
@@ -232,6 +242,19 @@ func (l *Lexer) skipWhitespace() {
 	}
 }
 
+func (l *Lexer) skipComments() {
+	for {
+		if l.ch == '/' && l.peekChar() == '/' {
+			l.readSingleLineComment()
+		} else if l.ch == '/' && l.peekChar() == '*' {
+			l.readMultiLineComment()
+		} else {
+			break
+		}
+		l.skipWhitespace()
+	}
+}
+
 func (l *Lexer) readString() string {
 	position := l.position + 1
 	for {
@@ -239,6 +262,46 @@ func (l *Lexer) readString() string {
 		if l.ch == '"' || l.ch == 0 {
 			break
 		}
+	}
+	return l.input[position:l.position]
+}
+
+func (l *Lexer) readSingleLineComment() string {
+	position := l.position
+	for l.ch != '\n' && l.ch != 0 {
+		l.readChar()
+	}
+	return l.input[position:l.position]
+}
+
+func (l *Lexer) hasValidMultiLineComment() bool {
+	// Check if the comment starting at current position has a valid closing */
+	pos := l.position + 2 // Skip /*
+	for pos < len(l.input) {
+		if pos+1 < len(l.input) && l.input[pos] == '*' && l.input[pos+1] == '/' {
+			return true
+		}
+		pos++
+	}
+	return false
+}
+
+func (l *Lexer) readMultiLineComment() string {
+	position := l.position
+	l.readChar() // skip '/'
+	l.readChar() // skip '*'
+	
+	for {
+		if l.ch == 0 {
+			// Unterminated comment - return what we have
+			break
+		}
+		if l.ch == '*' && l.peekChar() == '/' {
+			l.readChar() // skip '*'
+			l.readChar() // skip '/'
+			break
+		}
+		l.readChar()
 	}
 	return l.input[position:l.position]
 }

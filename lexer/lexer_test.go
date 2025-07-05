@@ -163,3 +163,115 @@ true || false;
 		}
 	}
 }
+
+func TestComments(t *testing.T) {
+	input := `// This is a single line comment
+let five = 5; // Another single line comment
+/* This is a 
+   multi-line comment */
+let ten = 10;
+/* Another multi-line comment */`
+
+	tests := []struct {
+		expectedType    token.TokenType
+		expectedLiteral string
+	}{
+		{token.LET, "let"},
+		{token.IDENT, "five"},
+		{token.ASSIGN, "="},
+		{token.INT, "5"},
+		{token.SEMICOLON, ";"},
+		{token.LET, "let"},
+		{token.IDENT, "ten"},
+		{token.ASSIGN, "="},
+		{token.INT, "10"},
+		{token.SEMICOLON, ";"},
+		{token.EOF, ""},
+	}
+
+	l := New(input)
+
+	for i, tt := range tests {
+		tok := l.NextToken()
+
+		if tok.Type != tt.expectedType {
+			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q",
+				i, tt.expectedType, tok.Type)
+		}
+
+		if tok.Literal != tt.expectedLiteral {
+			t.Fatalf("tests[%d] - literal wrong. expected=%q, got=%q",
+				i, tt.expectedLiteral, tok.Literal)
+		}
+	}
+}
+
+func TestSingleLineComment(t *testing.T) {
+	input := `// This is a single line comment
+// Another comment
+let x = 5;`
+
+	expected := []struct {
+		expectedType    token.TokenType
+		expectedLiteral string
+	}{
+		{token.LET, "let"},
+		{token.IDENT, "x"},
+		{token.ASSIGN, "="},
+		{token.INT, "5"},
+		{token.SEMICOLON, ";"},
+		{token.EOF, ""},
+	}
+
+	l := New(input)
+
+	for i, tt := range expected {
+		tok := l.NextToken()
+
+		if tok.Type != tt.expectedType {
+			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q",
+				i, tt.expectedType, tok.Type)
+		}
+
+		if tok.Literal != tt.expectedLiteral {
+			t.Fatalf("tests[%d] - literal wrong. expected=%q, got=%q",
+				i, tt.expectedLiteral, tok.Literal)
+		}
+	}
+}
+
+func TestMultiLineComment(t *testing.T) {
+	input := `/* This is a 
+   multi-line comment 
+   that spans multiple lines */
+let x = 5;
+/* Another multi-line comment */`
+
+	expected := []struct {
+		expectedType    token.TokenType
+		expectedLiteral string
+	}{
+		{token.LET, "let"},
+		{token.IDENT, "x"},
+		{token.ASSIGN, "="},
+		{token.INT, "5"},
+		{token.SEMICOLON, ";"},
+		{token.EOF, ""},
+	}
+
+	l := New(input)
+
+	for i, tt := range expected {
+		tok := l.NextToken()
+
+		if tok.Type != tt.expectedType {
+			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q",
+				i, tt.expectedType, tok.Type)
+		}
+
+		if tok.Literal != tt.expectedLiteral {
+			t.Fatalf("tests[%d] - literal wrong. expected=%q, got=%q",
+				i, tt.expectedLiteral, tok.Literal)
+		}
+	}
+}

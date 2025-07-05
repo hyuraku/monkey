@@ -290,7 +290,7 @@ func (l *Lexer) readMultiLineComment() string {
 	position := l.position
 	l.readChar() // skip '/'
 	l.readChar() // skip '*'
-	
+
 	for {
 		if l.ch == 0 {
 			// Unterminated comment - return what we have

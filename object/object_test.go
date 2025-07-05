@@ -28,89 +28,89 @@ func TestSplitBuiltin(t *testing.T) {
 	}{
 		// Normal splitting cases
 		{
-			args: []Object{&String{Value: "a,b,c"}, &String{Value: ","}},
+			args:     []Object{&String{Value: "a,b,c"}, &String{Value: ","}},
 			expected: []string{"a", "b", "c"},
 		},
 		{
-			args: []Object{&String{Value: "hello world test"}, &String{Value: " "}},
+			args:     []Object{&String{Value: "hello world test"}, &String{Value: " "}},
 			expected: []string{"hello", "world", "test"},
 		},
 		{
-			args: []Object{&String{Value: "one::two::three"}, &String{Value: "::"}},
+			args:     []Object{&String{Value: "one::two::three"}, &String{Value: "::"}},
 			expected: []string{"one", "two", "three"},
 		},
 		{
-			args: []Object{&String{Value: "a|b|c|d"}, &String{Value: "|"}},
+			args:     []Object{&String{Value: "a|b|c|d"}, &String{Value: "|"}},
 			expected: []string{"a", "b", "c", "d"},
 		},
 		// Edge case: empty string
 		{
-			args: []Object{&String{Value: ""}, &String{Value: ","}},
+			args:     []Object{&String{Value: ""}, &String{Value: ","}},
 			expected: []string{""},
 		},
 		// Edge case: delimiter not found
 		{
-			args: []Object{&String{Value: "abc"}, &String{Value: ","}},
+			args:     []Object{&String{Value: "abc"}, &String{Value: ","}},
 			expected: []string{"abc"},
 		},
 		// Edge case: string starts with delimiter
 		{
-			args: []Object{&String{Value: ",a,b,c"}, &String{Value: ","}},
+			args:     []Object{&String{Value: ",a,b,c"}, &String{Value: ","}},
 			expected: []string{"", "a", "b", "c"},
 		},
 		// Edge case: string ends with delimiter
 		{
-			args: []Object{&String{Value: "a,b,c,"}, &String{Value: ","}},
+			args:     []Object{&String{Value: "a,b,c,"}, &String{Value: ","}},
 			expected: []string{"a", "b", "c", ""},
 		},
 		// Edge case: consecutive delimiters
 		{
-			args: []Object{&String{Value: "a,,b"}, &String{Value: ","}},
+			args:     []Object{&String{Value: "a,,b"}, &String{Value: ","}},
 			expected: []string{"a", "", "b"},
 		},
 		// Edge case: only delimiter
 		{
-			args: []Object{&String{Value: ","}, &String{Value: ","}},
+			args:     []Object{&String{Value: ","}, &String{Value: ","}},
 			expected: []string{"", ""},
 		},
 		// Edge case: multiple character delimiter
 		{
-			args: []Object{&String{Value: "hello<-->world<-->test"}, &String{Value: "<-->"}},
+			args:     []Object{&String{Value: "hello<-->world<-->test"}, &String{Value: "<-->"}},
 			expected: []string{"hello", "world", "test"},
 		},
 		// Error case: empty delimiter
 		{
-			args: []Object{&String{Value: "abc"}, &String{Value: ""}},
+			args:     []Object{&String{Value: "abc"}, &String{Value: ""}},
 			expected: "delimiter cannot be empty",
 		},
 		// Error case: wrong number of arguments - too few
 		{
-			args: []Object{&String{Value: "abc"}},
+			args:     []Object{&String{Value: "abc"}},
 			expected: "wrong number of arguments. got=1, want=2",
 		},
 		// Error case: wrong number of arguments - too many
 		{
-			args: []Object{&String{Value: "abc"}, &String{Value: ","}, &String{Value: "extra"}},
+			args:     []Object{&String{Value: "abc"}, &String{Value: ","}, &String{Value: "extra"}},
 			expected: "wrong number of arguments. got=3, want=2",
 		},
 		// Error case: first argument not string
 		{
-			args: []Object{&Integer{Value: 123}, &String{Value: ","}},
+			args:     []Object{&Integer{Value: 123}, &String{Value: ","}},
 			expected: "first argument to `split` must be STRING, got INTEGER",
 		},
 		// Error case: second argument not string
 		{
-			args: []Object{&String{Value: "abc"}, &Integer{Value: 123}},
+			args:     []Object{&String{Value: "abc"}, &Integer{Value: 123}},
 			expected: "second argument to `split` must be STRING, got INTEGER",
 		},
 		// Error case: nil first argument
 		{
-			args: []Object{nil, &String{Value: ","}},
+			args:     []Object{nil, &String{Value: ","}},
 			expected: "first argument to `split` cannot be nil",
 		},
 		// Error case: nil second argument
 		{
-			args: []Object{&String{Value: "abc"}, nil},
+			args:     []Object{&String{Value: "abc"}, nil},
 			expected: "second argument to `split` cannot be nil",
 		},
 	}
@@ -122,7 +122,7 @@ func TestSplitBuiltin(t *testing.T) {
 
 	for i, tt := range tests {
 		result := splitBuiltin.Fn(tt.args...)
-		
+
 		switch expected := tt.expected.(type) {
 		case []string:
 			// Test successful split result
@@ -131,12 +131,12 @@ func TestSplitBuiltin(t *testing.T) {
 				t.Errorf("test %d: expected Array, got %T (%+v)", i, result, result)
 				continue
 			}
-			
+
 			if len(arr.Elements) != len(expected) {
 				t.Errorf("test %d: expected %d elements, got %d", i, len(expected), len(arr.Elements))
 				continue
 			}
-			
+
 			for j, elem := range arr.Elements {
 				str, ok := elem.(*String)
 				if !ok {
@@ -147,7 +147,7 @@ func TestSplitBuiltin(t *testing.T) {
 					t.Errorf("test %d: element %d expected %q, got %q", i, j, expected[j], str.Value)
 				}
 			}
-			
+
 		case string:
 			// Test error result
 			errObj, ok := result.(*Error)
@@ -320,14 +320,14 @@ func TestJoinBuiltin(t *testing.T) {
 
 	for i, tt := range tests {
 		result := joinBuiltin.Fn(tt.args...)
-		
+
 		switch expected := tt.expected.(type) {
 		case string:
 			// Check if this is an error message
 			isError := (len(expected) >= 5 && expected[:5] == "wrong") ||
 				(len(expected) >= 5 && expected[:5] == "first") ||
 				(len(expected) >= 6 && expected[:6] == "second")
-			
+
 			if isError {
 				// Test error result
 				errObj, ok := result.(*Error)
@@ -458,7 +458,7 @@ func TestUpperBuiltin(t *testing.T) {
 
 	for i, tt := range tests {
 		result := upperBuiltin.Fn(tt.args...)
-		
+
 		switch expected := tt.expected.(type) {
 		case string:
 			if (len(expected) >= 5 && expected[:5] == "wrong") || (len(expected) >= 8 && expected[:8] == "argument") {
@@ -591,7 +591,7 @@ func TestLowerBuiltin(t *testing.T) {
 
 	for i, tt := range tests {
 		result := lowerBuiltin.Fn(tt.args...)
-		
+
 		switch expected := tt.expected.(type) {
 		case string:
 			if (len(expected) >= 5 && expected[:5] == "wrong") || (len(expected) >= 8 && expected[:8] == "argument") {
@@ -719,7 +719,7 @@ func TestAbsBuiltin(t *testing.T) {
 
 	for i, tt := range tests {
 		result := absBuiltin.Fn(tt.args...)
-		
+
 		switch expected := tt.expected.(type) {
 		case int64:
 			// Test successful integer result
@@ -880,7 +880,7 @@ func TestMinBuiltin(t *testing.T) {
 
 	for i, tt := range tests {
 		result := minBuiltin.Fn(tt.args...)
-		
+
 		switch expected := tt.expected.(type) {
 		case int64:
 			// Test successful integer result
@@ -1041,7 +1041,7 @@ func TestMaxBuiltin(t *testing.T) {
 
 	for i, tt := range tests {
 		result := maxBuiltin.Fn(tt.args...)
-		
+
 		switch expected := tt.expected.(type) {
 		case int64:
 			// Test successful integer result
@@ -1208,7 +1208,7 @@ func TestSqrtBuiltin(t *testing.T) {
 
 	for i, tt := range tests {
 		result := sqrtBuiltin.Fn(tt.args...)
-		
+
 		switch expected := tt.expected.(type) {
 		case float64:
 			// Test successful float result

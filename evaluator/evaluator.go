@@ -6,11 +6,7 @@ import (
 	"monkey/object"
 )
 
-var (
-	TRUE  = &object.Boolean{Value: true}
-	FALSE = &object.Boolean{Value: false}
-	NULL  = &object.Null{}
-)
+// Use shared singleton instances from object package to reduce memory allocation
 
 func Eval(node ast.Node, env *object.Environment) object.Object {
 	switch node := node.(type) {
@@ -19,7 +15,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression, env)
 	case *ast.IntegerLiteral:
-		return &object.Integer{Value: node.Value}
+		return object.NewInteger(node.Value)
 	case *ast.Boolean:
 		return nativeBoolToBooleanObject(node.Value)
 	case *ast.PrefixExpression:
@@ -113,9 +109,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 func nativeBoolToBooleanObject(input bool) *object.Boolean {
 	if input {
-		return TRUE
+		return object.TRUE
 	}
-	return FALSE
+	return object.FALSE
 }
 
 func evalPrefixExpression(operator string, right object.Object) object.Object {
@@ -131,21 +127,21 @@ func evalPrefixExpression(operator string, right object.Object) object.Object {
 
 func evalBangOperatorExpression(right object.Object) object.Object {
 	switch right {
-	case TRUE:
-		return FALSE
-	case FALSE:
-		return TRUE
-	case NULL:
-		return TRUE
+	case object.TRUE:
+		return object.FALSE
+	case object.FALSE:
+		return object.TRUE
+	case object.NULL:
+		return object.TRUE
 	default:
-		return FALSE
+		return object.FALSE
 	}
 }
 
 func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 	if right.Type() == object.INTEGER_OBJ {
 		value := right.(*object.Integer).Value
-		return &object.Integer{Value: -value}
+		return object.NewInteger(-value)
 	} else if right.Type() == object.FLOAT_OBJ {
 		value := right.(*object.Float).Value
 		return &object.Float{Value: -value}
@@ -185,13 +181,13 @@ func evalIntegerInfixExpression(operator string, left, right object.Object) obje
 
 	switch operator {
 	case "+":
-		return &object.Integer{Value: leftVal + rightVal}
+		return object.NewInteger(leftVal + rightVal)
 	case "-":
-		return &object.Integer{Value: leftVal - rightVal}
+		return object.NewInteger(leftVal - rightVal)
 	case "*":
-		return &object.Integer{Value: leftVal * rightVal}
+		return object.NewInteger(leftVal * rightVal)
 	case "/":
-		return &object.Integer{Value: leftVal / rightVal}
+		return object.NewInteger(leftVal / rightVal)
 	case "<":
 		return nativeBoolToBooleanObject(leftVal < rightVal)
 	case ">":
@@ -249,17 +245,17 @@ func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Obje
 	} else if ie.Alternative != nil {
 		return Eval(ie.Alternative, env)
 	} else {
-		return NULL
+		return object.NULL
 	}
 }
 
 func isTruthy(obj object.Object) bool {
 	switch obj {
-	case NULL:
+	case object.NULL:
 		return false
-	case TRUE:
+	case object.TRUE:
 		return true
-	case FALSE:
+	case object.FALSE:
 		return false
 	default:
 		return true
@@ -348,7 +344,7 @@ func applyFunction(fn object.Object, args []object.Object) object.Object {
 		if result := fn.Fn(args...); result != nil {
 			return result
 		}
-		return NULL
+		return object.NULL
 	default:
 		return newError("not a function: %s", fn.Type())
 	}
@@ -399,7 +395,7 @@ func evalArrayIndexExpression(array, index object.Object) object.Object {
 	max := int64(len(arrayObject.Elements) - 1)
 
 	if idx < 0 || idx > max {
-		return NULL
+		return object.NULL
 	}
 
 	return arrayObject.Elements[idx]
@@ -441,7 +437,7 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 
 	pair, ok := hashObject.Pairs[key.HashKey()]
 	if !ok {
-		return NULL
+		return object.NULL
 	}
 
 	return pair.Value
@@ -509,7 +505,7 @@ func evalAssignmentExpression(node *ast.AssignmentExpression, env *object.Enviro
 }
 
 func evalForStatement(node *ast.ForStatement, env *object.Environment) object.Object {
-	var result object.Object = NULL
+	var result object.Object = object.NULL
 
 	// Create new environment for loop scope
 	loopEnv := object.NewEnclosedEnvironment(env)
@@ -540,11 +536,11 @@ func evalForStatement(node *ast.ForStatement, env *object.Environment) object.Ob
 		// Handle break and continue
 		if result != nil {
 			if result.Type() == object.BREAK_OBJ {
-				result = NULL
+				result = object.NULL
 				break
 			}
 			if result.Type() == object.CONTINUE_OBJ {
-				result = NULL
+				result = object.NULL
 				// Continue to update statement
 			} else if result.Type() == object.RETURN_VALUE_OBJ || result.Type() == object.ERROR_OBJ {
 				return result
@@ -564,7 +560,7 @@ func evalForStatement(node *ast.ForStatement, env *object.Environment) object.Ob
 }
 
 func evalWhileStatement(node *ast.WhileStatement, env *object.Environment) object.Object {
-	var result object.Object = NULL
+	var result object.Object = object.NULL
 
 	// Create new environment for loop scope
 	loopEnv := object.NewEnclosedEnvironment(env)
@@ -585,11 +581,11 @@ func evalWhileStatement(node *ast.WhileStatement, env *object.Environment) objec
 		// Handle break and continue
 		if result != nil {
 			if result.Type() == object.BREAK_OBJ {
-				result = NULL
+				result = object.NULL
 				break
 			}
 			if result.Type() == object.CONTINUE_OBJ {
-				result = NULL
+				result = object.NULL
 				continue
 			} else if result.Type() == object.RETURN_VALUE_OBJ || result.Type() == object.ERROR_OBJ {
 				return result

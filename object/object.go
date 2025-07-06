@@ -228,3 +228,34 @@ type Continue struct{}
 
 func (c *Continue) Type() ObjectType { return CONTINUE_OBJ }
 func (c *Continue) Inspect() string  { return "continue" }
+
+// Shared singleton instances to reduce memory allocation
+var (
+	TRUE  = &Boolean{Value: true}
+	FALSE = &Boolean{Value: false}
+	NULL  = &Null{}
+)
+
+// Small integer cache for frequently used values (-256 to 255)
+const (
+	SmallIntCacheMin  = -256
+	SmallIntCacheMax  = 255
+	SmallIntCacheSize = SmallIntCacheMax - SmallIntCacheMin + 1
+)
+
+var smallIntegerCache [SmallIntCacheSize]*Integer
+
+// Initialize small integer cache
+func init() {
+	for i := 0; i < SmallIntCacheSize; i++ {
+		smallIntegerCache[i] = &Integer{Value: int64(SmallIntCacheMin + i)}
+	}
+}
+
+// NewInteger creates or returns a cached Integer object
+func NewInteger(value int64) *Integer {
+	if value >= SmallIntCacheMin && value <= SmallIntCacheMax {
+		return smallIntegerCache[value-SmallIntCacheMin]
+	}
+	return &Integer{Value: value}
+}

@@ -7,21 +7,21 @@ import (
 	"monkey/object"
 )
 
-const StackSize = 2048
-const GlobalsSize = 65536
+const InitialStackSize = 256 // Start with smaller stack, grow as needed
+const MaxStackSize = 2048    // Maximum stack size (original StackSize)
+const GlobalsSize = 65536    // Keep globals size for now
 const MaxFrames = 1024
 
-var True = &object.Boolean{Value: true}
-var False = &object.Boolean{Value: false}
-var Null = &object.Null{}
+// Use shared singleton instances from object package to reduce memory allocation
 
 type VM struct {
 	constants    []object.Object
 	instructions code.Instructions
 
-	stack   []object.Object
-	sp      int
-	globals []object.Object
+	stack    []object.Object
+	stackCap int // Current stack capacity
+	sp       int
+	globals  []object.Object
 
 	frames     []*Frame
 	frameIndex int
@@ -38,7 +38,8 @@ func New(bytecode *compiler.Bytecode) *VM {
 		constants:    bytecode.Constants,
 		instructions: bytecode.Instructions,
 
-		stack:      make([]object.Object, StackSize),
+		stack:      make([]object.Object, InitialStackSize),
+		stackCap:   InitialStackSize,
 		sp:         0,
 		globals:    make([]object.Object, GlobalsSize),
 		frames:     frames,
@@ -85,12 +86,12 @@ func (vm *VM) Run() error {
 				return err
 			}
 		case code.OpTrue:
-			err := vm.push(True)
+			err := vm.push(object.TRUE)
 			if err != nil {
 				return err
 			}
 		case code.OpFalse:
-			err := vm.push(False)
+			err := vm.push(object.FALSE)
 			if err != nil {
 				return err
 			}
@@ -145,7 +146,7 @@ func (vm *VM) Run() error {
 				}
 			}
 		case code.OpNull:
-			err := vm.push(Null)
+			err := vm.push(object.NULL)
 			if err != nil {
 				return err
 			}
@@ -213,7 +214,7 @@ func (vm *VM) Run() error {
 			frame := vm.popFrame()
 			vm.sp = frame.basePointer - 1
 
-			err := vm.push(Null)
+			err := vm.push(object.NULL)
 			if err != nil {
 				return err
 			}
@@ -270,11 +271,27 @@ func (vm *VM) Run() error {
 }
 
 func (vm *VM) push(o object.Object) error {
-	if vm.sp >= StackSize {
-		return fmt.Errorf("stack overflow")
+	if vm.sp >= vm.stackCap {
+		if err := vm.growStack(); err != nil {
+			return err
+		}
 	}
 	vm.stack[vm.sp] = o
 	vm.sp++
+	return nil
+}
+
+// growStack doubles the stack size up to MaxStackSize
+func (vm *VM) growStack() error {
+	newCap := vm.stackCap * 2
+	if newCap > MaxStackSize {
+		return fmt.Errorf("stack overflow: maximum stack size (%d) exceeded", MaxStackSize)
+	}
+
+	newStack := make([]object.Object, newCap)
+	copy(newStack, vm.stack)
+	vm.stack = newStack
+	vm.stackCap = newCap
 	return nil
 }
 
@@ -335,7 +352,7 @@ func (vm *VM) executeBinaryIntegerOperation(op code.Opcode, left, right object.O
 		return fmt.Errorf("unknown operator: %d", op)
 	}
 
-	vm.push(&object.Integer{Value: result})
+	vm.push(object.NewInteger(result))
 	return nil
 }
 
@@ -425,14 +442,14 @@ func (vm *VM) executeIntegerComparison(op code.Opcode, left, right object.Object
 func (vm *VM) executeBangOperator() error {
 	operand := vm.pop()
 	switch operand {
-	case True:
-		return vm.push(False)
-	case False:
-		return vm.push(True)
-	case Null:
-		return vm.push(True)
+	case object.TRUE:
+		return vm.push(object.FALSE)
+	case object.FALSE:
+		return vm.push(object.TRUE)
+	case object.NULL:
+		return vm.push(object.TRUE)
 	default:
-		return vm.push(False)
+		return vm.push(object.FALSE)
 	}
 }
 
@@ -445,7 +462,7 @@ func (vm *VM) executeMinusOperator() error {
 		return fmt.Errorf("unsupported type for negation: %s", operand.Type())
 	}
 	value := operand.(*object.Integer).Value
-	return vm.push(&object.Integer{Value: -value})
+	return vm.push(object.NewInteger(-value))
 }
 
 func (vm *VM) executeIndexExpression(left, index object.Object) error {
@@ -487,9 +504,9 @@ func (vm *VM) buildHash(startIndex, endIndex int) (object.Object, error) {
 
 func nativeBoolToBooleanObject(input bool) *object.Boolean {
 	if input {
-		return True
+		return object.TRUE
 	}
-	return False
+	return object.FALSE
 }
 
 func isTruthy(obj object.Object) bool {
@@ -511,7 +528,7 @@ func (vm *VM) executeArrayIndex(array, index object.Object) error {
 	i := index.(*object.Integer).Value
 	max := int64(len(arrayObject.Elements) - 1)
 	if i < 0 || i > max {
-		return vm.push(Null)
+		return vm.push(object.NULL)
 	}
 	return vm.push(arrayObject.Elements[i])
 }
@@ -527,7 +544,7 @@ func (vm *VM) executeHashIndex(hash, index object.Object) error {
 	}
 	pair, ok := hashObject.Pairs[key.HashKey()]
 	if !ok {
-		return vm.push(Null)
+		return vm.push(object.NULL)
 	}
 	return vm.push(pair.Value)
 }
@@ -582,7 +599,7 @@ func (vm *VM) callBuiltin(fn *object.Builtin, numArgs int) error {
 	if result != nil {
 		vm.push(result)
 	} else {
-		vm.push(Null)
+		vm.push(object.NULL)
 	}
 	return nil
 }

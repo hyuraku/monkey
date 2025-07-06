@@ -6,7 +6,7 @@ import (
 
 func TestIntegerCaching(t *testing.T) {
 	tests := []struct {
-		value int64
+		value          int64
 		shouldBeCached bool
 	}{
 		{0, true},
@@ -23,7 +23,7 @@ func TestIntegerCaching(t *testing.T) {
 	for _, tt := range tests {
 		obj1 := NewInteger(tt.value)
 		obj2 := NewInteger(tt.value)
-		
+
 		if tt.shouldBeCached {
 			if obj1 != obj2 {
 				t.Errorf("Integer %d should be cached (same instance), but got different instances", tt.value)
@@ -33,7 +33,7 @@ func TestIntegerCaching(t *testing.T) {
 				t.Errorf("Integer %d should not be cached (different instances), but got same instance", tt.value)
 			}
 		}
-		
+
 		// Verify value is correct
 		if obj1.Value != tt.value {
 			t.Errorf("Integer value mismatch: expected %d, got %d", tt.value, obj1.Value)
@@ -46,22 +46,22 @@ func TestBooleanSingletons(t *testing.T) {
 	if TRUE != TRUE {
 		t.Error("TRUE instances should be identical")
 	}
-	
-	// Test that FALSE instances are the same  
+
+	// Test that FALSE instances are the same
 	if FALSE != FALSE {
 		t.Error("FALSE instances should be identical")
 	}
-	
+
 	// Test that NULL instances are the same
 	if NULL != NULL {
 		t.Error("NULL instances should be identical")
 	}
-	
+
 	// Test values are correct
 	if TRUE.Value != true {
 		t.Error("TRUE value should be true")
 	}
-	
+
 	if FALSE.Value != false {
 		t.Error("FALSE value should be false")
 	}
@@ -71,10 +71,10 @@ func BenchmarkIntegerCreation(b *testing.B) {
 	b.Run("Cached", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			// This should use cached instances
-			NewInteger(int64(i % 512 - 256))
+			NewInteger(int64(i%512 - 256))
 		}
 	})
-	
+
 	b.Run("Uncached", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			// This should create new instances

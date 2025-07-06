@@ -7,9 +7,9 @@ import (
 	"monkey/object"
 )
 
-const InitialStackSize = 256   // Start with smaller stack, grow as needed
-const MaxStackSize = 2048      // Maximum stack size (original StackSize)
-const GlobalsSize = 65536      // Keep globals size for now
+const InitialStackSize = 256 // Start with smaller stack, grow as needed
+const MaxStackSize = 2048    // Maximum stack size (original StackSize)
+const GlobalsSize = 65536    // Keep globals size for now
 const MaxFrames = 1024
 
 // Use shared singleton instances from object package to reduce memory allocation
@@ -19,7 +19,7 @@ type VM struct {
 	instructions code.Instructions
 
 	stack    []object.Object
-	stackCap int              // Current stack capacity
+	stackCap int // Current stack capacity
 	sp       int
 	globals  []object.Object
 
@@ -287,7 +287,7 @@ func (vm *VM) growStack() error {
 	if newCap > MaxStackSize {
 		return fmt.Errorf("stack overflow: maximum stack size (%d) exceeded", MaxStackSize)
 	}
-	
+
 	newStack := make([]object.Object, newCap)
 	copy(newStack, vm.stack)
 	vm.stack = newStack

@@ -238,8 +238,8 @@ var (
 
 // Small integer cache for frequently used values (-256 to 255)
 const (
-	SmallIntCacheMin = -256
-	SmallIntCacheMax = 255
+	SmallIntCacheMin  = -256
+	SmallIntCacheMax  = 255
 	SmallIntCacheSize = SmallIntCacheMax - SmallIntCacheMin + 1
 )
 

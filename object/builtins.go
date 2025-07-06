@@ -19,9 +19,9 @@ var Builtins = []struct {
 			}
 			switch arg := args[0].(type) {
 			case *Array:
-				return &Integer{Value: int64(len(arg.Elements))}
+				return NewInteger(int64(len(arg.Elements)))
 			case *String:
-				return &Integer{Value: int64(len(arg.Value))}
+				return NewInteger(int64(len(arg.Value)))
 			default:
 				return newError("argument to `len` not supported, got %s",
 					args[0].Type())
@@ -306,7 +306,7 @@ var Builtins = []struct {
 				if value < 0 {
 					value = -value
 				}
-				return &Integer{Value: value}
+				return NewInteger(value)
 			case *Float:
 				return &Float{Value: math.Abs(arg.Value)}
 			default:

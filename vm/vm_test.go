@@ -97,11 +97,11 @@ func TestConditionals(t *testing.T) {
 		},
 		{
 			"if (1 > 2) { 10; }",
-			Null,
+			object.NULL,
 		},
 		{
 			"if (false) { 10; }",
-			Null,
+			object.NULL,
 		},
 		{
 			"if ((if (false) { 10 })) { 10 } else { 20 }",
@@ -166,12 +166,12 @@ func TestIndexExpressions(t *testing.T) {
 		{"[1, 2, 3][1]", 2},
 		{"[1, 2, 3][0 + 2]", 3},
 		{"[[1, 1, 1]][0][0]", 1},
-		{"[][0]", Null},
-		{"[1, 2, 3][99]", Null},
-		{"[1][-1]", Null},
+		{"[][0]", object.NULL},
+		{"[1, 2, 3][99]", object.NULL},
+		{"[1][-1]", object.NULL},
 		{"{1: 1, 2: 2}[1]", 1},
 		{"{1: 1, 2: 2}[2]", 2},
-		{"{1: 1}[0]", Null},
+		{"{1: 1}[0]", object.NULL},
 	}
 	runVmTests(t, tests)
 }
@@ -235,7 +235,7 @@ func TestFunctionsWithoutReturnValue(t *testing.T) {
 		let noReturn = fn() { };
 		noReturn();
 		`,
-			expected: Null,
+			expected: object.NULL,
 		},
 		{
 			input: `
@@ -244,7 +244,7 @@ func TestFunctionsWithoutReturnValue(t *testing.T) {
 		noReturn();
 		noReturnTwo();
 		`,
-			expected: Null,
+			expected: object.NULL,
 		},
 	}
 
@@ -496,8 +496,8 @@ func testExpectedObject(t *testing.T, expected interface{}, actual object.Object
 			t.Errorf("testBooleanObject failed: %s", err)
 		}
 	case *object.Null:
-		if actual != Null {
-			t.Errorf("object is not Null. got=%T (%+v)", actual, actual)
+		if actual != object.NULL {
+			t.Errorf("object is not object.NULL. got=%T (%+v)", actual, actual)
 		}
 	case string:
 		err := testStringObject(expected, actual)
@@ -567,23 +567,23 @@ func TestBuiltinFunctions(t *testing.T) {
 		},
 		{`len([1, 2, 3])`, 3},
 		{`len([])`, 0},
-		{`puts("hello", "world!")`, Null},
+		{`puts("hello", "world!")`, object.NULL},
 		{`first([1, 2, 3])`, 1},
-		{`first([])`, Null},
+		{`first([])`, object.NULL},
 		{`first(1)`,
 			&object.Error{
 				Message: "argument to `first` must be ARRAY, got INTEGER",
 			},
 		},
 		{`last([1, 2, 3])`, 3},
-		{`last([])`, Null},
+		{`last([])`, object.NULL},
 		{`last(1)`,
 			&object.Error{
 				Message: "argument to `last` must be ARRAY, got INTEGER",
 			},
 		},
 		{`rest([1, 2, 3])`, []int{2, 3}},
-		{`rest([])`, Null},
+		{`rest([])`, object.NULL},
 		{`push([], 1)`, []int{1}},
 		{`push(1, 1)`,
 			&object.Error{

@@ -6,6 +6,7 @@ import (
 	"hash/fnv"
 	"monkey/ast"
 	"monkey/code"
+	"regexp"
 	"strings"
 )
 
@@ -30,6 +31,8 @@ const (
 	CLOSURE_OBJ = "CLOSURE"
 
 	FLOAT_OBJ = "FLOAT"
+
+	REGEX_OBJ = "REGEX"
 
 	BREAK_OBJ    = "BREAK"
 	CONTINUE_OBJ = "CONTINUE"
@@ -228,6 +231,14 @@ type Continue struct{}
 
 func (c *Continue) Type() ObjectType { return CONTINUE_OBJ }
 func (c *Continue) Inspect() string  { return "continue" }
+
+type Regex struct {
+	Pattern string
+	Regexp  *regexp.Regexp
+}
+
+func (r *Regex) Type() ObjectType { return REGEX_OBJ }
+func (r *Regex) Inspect() string  { return fmt.Sprintf("/%s/", r.Pattern) }
 
 // Shared singleton instances to reduce memory allocation
 var (

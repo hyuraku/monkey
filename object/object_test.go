@@ -1,6 +1,10 @@
 package object
 
-import "testing"
+import (
+	"regexp"
+	"strings"
+	"testing"
+)
 
 func TestStringHashkey(t *testing.T) {
 	hello1 := &String{Value: "Hello World"}
@@ -1219,6 +1223,445 @@ func TestSqrtBuiltin(t *testing.T) {
 			}
 			if floatObj.Value != expected {
 				t.Errorf("test %d: expected %f, got %f", i, expected, floatObj.Value)
+			}
+		case string:
+			// Test error result
+			errObj, ok := result.(*Error)
+			if !ok {
+				t.Errorf("test %d: expected Error, got %T (%+v)", i, result, result)
+				continue
+			}
+			if errObj.Message != expected {
+				t.Errorf("test %d: expected error message %q, got %q", i, expected, errObj.Message)
+			}
+		}
+	}
+}
+
+func TestRegexBuiltin(t *testing.T) {
+	tests := []struct {
+		args     []Object
+		expected interface{}
+	}{
+		// Normal cases: valid regex patterns
+		{
+			args:     []Object{&String{Value: "hello"}},
+			expected: "hello",
+		},
+		{
+			args:     []Object{&String{Value: "\\d+"}},
+			expected: "\\d+",
+		},
+		{
+			args:     []Object{&String{Value: "[a-zA-Z]+"}},
+			expected: "[a-zA-Z]+",
+		},
+		{
+			args:     []Object{&String{Value: "^test$"}},
+			expected: "^test$",
+		},
+		{
+			args:     []Object{&String{Value: "foo.*bar"}},
+			expected: "foo.*bar",
+		},
+		// Complex patterns
+		{
+			args:     []Object{&String{Value: "\\w+@\\w+\\.\\w+"}},
+			expected: "\\w+@\\w+\\.\\w+",
+		},
+		{
+			args:     []Object{&String{Value: "\\b\\w+\\s+\\w+\\b"}},
+			expected: "\\b\\w+\\s+\\w+\\b",
+		},
+		// Error case: invalid regex patterns
+		{
+			args:     []Object{&String{Value: "["}},
+			expected: "invalid regex pattern:",
+		},
+		{
+			args:     []Object{&String{Value: "(unclosed"}},
+			expected: "invalid regex pattern:",
+		},
+		{
+			args:     []Object{&String{Value: "*"}},
+			expected: "invalid regex pattern:",
+		},
+		// Error case: wrong number of arguments
+		{
+			args:     []Object{},
+			expected: "wrong number of arguments. got=0, want=1",
+		},
+		{
+			args:     []Object{&String{Value: "test"}, &String{Value: "extra"}},
+			expected: "wrong number of arguments. got=2, want=1",
+		},
+		// Error case: non-string argument
+		{
+			args:     []Object{&Integer{Value: 123}},
+			expected: "argument to `regex` must be STRING, got INTEGER",
+		},
+		{
+			args:     []Object{&Boolean{Value: true}},
+			expected: "argument to `regex` must be STRING, got BOOLEAN",
+		},
+		// Error case: nil argument
+		{
+			args:     []Object{nil},
+			expected: "argument to `regex` cannot be nil",
+		},
+	}
+
+	regexBuiltin := GetBuiltinByName("regex")
+	if regexBuiltin == nil {
+		t.Fatal("regex builtin not found")
+	}
+
+	for i, tt := range tests {
+		result := regexBuiltin.Fn(tt.args...)
+
+		switch expected := tt.expected.(type) {
+		case string:
+			if expected == "invalid regex pattern:" {
+				// Test error result for invalid patterns
+				errObj, ok := result.(*Error)
+				if !ok {
+					t.Errorf("test %d: expected Error, got %T (%+v)", i, result, result)
+					continue
+				}
+				if !strings.Contains(errObj.Message, expected) {
+					t.Errorf("test %d: expected error message containing %q, got %q", i, expected, errObj.Message)
+				}
+			} else if strings.HasPrefix(expected, "wrong number of arguments") || strings.HasPrefix(expected, "argument to") {
+				// Test error result for argument errors
+				errObj, ok := result.(*Error)
+				if !ok {
+					t.Errorf("test %d: expected Error, got %T (%+v)", i, result, result)
+					continue
+				}
+				if errObj.Message != expected {
+					t.Errorf("test %d: expected error message %q, got %q", i, expected, errObj.Message)
+				}
+			} else {
+				// Test successful regex creation
+				regexObj, ok := result.(*Regex)
+				if !ok {
+					t.Errorf("test %d: expected Regex, got %T (%+v)", i, result, result)
+					continue
+				}
+				if regexObj.Pattern != expected {
+					t.Errorf("test %d: expected pattern %q, got %q", i, expected, regexObj.Pattern)
+				}
+				if regexObj.Regexp == nil {
+					t.Errorf("test %d: regex Regexp field is nil", i)
+				}
+			}
+		}
+	}
+}
+
+func TestMatchBuiltin(t *testing.T) {
+	// Create test regex objects
+	testRegex1, _ := regexp.Compile("hello")
+	testRegex2, _ := regexp.Compile("\\d+")
+	testRegex3, _ := regexp.Compile("(\\w+)@(\\w+)\\.com")
+	testRegex4, _ := regexp.Compile("foo")
+
+	tests := []struct {
+		args     []Object
+		expected interface{}
+	}{
+		// Normal cases: successful matches
+		{
+			args:     []Object{&Regex{Pattern: "hello", Regexp: testRegex1}, &String{Value: "hello world"}},
+			expected: []string{"hello"},
+		},
+		{
+			args:     []Object{&Regex{Pattern: "\\d+", Regexp: testRegex2}, &String{Value: "test 123 end"}},
+			expected: []string{"123"},
+		},
+		{
+			args:     []Object{&Regex{Pattern: "(\\w+)@(\\w+)\\.com", Regexp: testRegex3}, &String{Value: "Contact us at john@example.com"}},
+			expected: []string{"john@example.com", "john", "example"},
+		},
+		// No match cases
+		{
+			args:     []Object{&Regex{Pattern: "foo", Regexp: testRegex4}, &String{Value: "bar baz"}},
+			expected: "null",
+		},
+		{
+			args:     []Object{&Regex{Pattern: "\\d+", Regexp: testRegex2}, &String{Value: "no numbers here"}},
+			expected: "null",
+		},
+		// Error case: wrong number of arguments
+		{
+			args:     []Object{&Regex{Pattern: "test", Regexp: testRegex1}},
+			expected: "wrong number of arguments. got=1, want=2",
+		},
+		{
+			args:     []Object{&Regex{Pattern: "test", Regexp: testRegex1}, &String{Value: "text"}, &String{Value: "extra"}},
+			expected: "wrong number of arguments. got=3, want=2",
+		},
+		// Error case: wrong argument types
+		{
+			args:     []Object{&String{Value: "not regex"}, &String{Value: "text"}},
+			expected: "first argument to `match` must be REGEX, got STRING",
+		},
+		{
+			args:     []Object{&Regex{Pattern: "test", Regexp: testRegex1}, &Integer{Value: 123}},
+			expected: "second argument to `match` must be STRING, got INTEGER",
+		},
+		// Error case: nil arguments
+		{
+			args:     []Object{nil, &String{Value: "text"}},
+			expected: "first argument to `match` cannot be nil",
+		},
+		{
+			args:     []Object{&Regex{Pattern: "test", Regexp: testRegex1}, nil},
+			expected: "second argument to `match` cannot be nil",
+		},
+	}
+
+	matchBuiltin := GetBuiltinByName("match")
+	if matchBuiltin == nil {
+		t.Fatal("match builtin not found")
+	}
+
+	for i, tt := range tests {
+		result := matchBuiltin.Fn(tt.args...)
+
+		switch expected := tt.expected.(type) {
+		case []string:
+			// Test successful match result
+			arr, ok := result.(*Array)
+			if !ok {
+				t.Errorf("test %d: expected Array, got %T (%+v)", i, result, result)
+				continue
+			}
+			if len(arr.Elements) != len(expected) {
+				t.Errorf("test %d: expected %d elements, got %d", i, len(expected), len(arr.Elements))
+				continue
+			}
+			for j, elem := range arr.Elements {
+				str, ok := elem.(*String)
+				if !ok {
+					t.Errorf("test %d: element %d is not String, got %T", i, j, elem)
+					continue
+				}
+				if str.Value != expected[j] {
+					t.Errorf("test %d: element %d expected %q, got %q", i, j, expected[j], str.Value)
+				}
+			}
+		case string:
+			if expected == "null" {
+				// Test null result for no match
+				if result != NULL {
+					t.Errorf("test %d: expected NULL, got %T (%+v)", i, result, result)
+				}
+			} else {
+				// Test error result
+				errObj, ok := result.(*Error)
+				if !ok {
+					t.Errorf("test %d: expected Error, got %T (%+v)", i, result, result)
+					continue
+				}
+				if errObj.Message != expected {
+					t.Errorf("test %d: expected error message %q, got %q", i, expected, errObj.Message)
+				}
+			}
+		}
+	}
+}
+
+func TestReplaceBuiltin(t *testing.T) {
+	// Create test regex objects
+	testRegex1, _ := regexp.Compile("hello")
+	testRegex2, _ := regexp.Compile("\\d+")
+	testRegex3, _ := regexp.Compile("(\\w+)@(\\w+)\\.com")
+
+	tests := []struct {
+		args     []Object
+		expected interface{}
+	}{
+		// Normal cases: successful replacements
+		{
+			args:     []Object{&String{Value: "hello world"}, &Regex{Pattern: "hello", Regexp: testRegex1}, &String{Value: "hi"}},
+			expected: "hi world",
+		},
+		{
+			args:     []Object{&String{Value: "test 123 and 456"}, &Regex{Pattern: "\\d+", Regexp: testRegex2}, &String{Value: "X"}},
+			expected: "test X and X",
+		},
+		{
+			args:     []Object{&String{Value: "Email john@example.com"}, &Regex{Pattern: "(\\w+)@(\\w+)\\.com", Regexp: testRegex3}, &String{Value: "$1 at $2"}},
+			expected: "Email john at example",
+		},
+		// No match cases
+		{
+			args:     []Object{&String{Value: "no match here"}, &Regex{Pattern: "\\d+", Regexp: testRegex2}, &String{Value: "X"}},
+			expected: "no match here",
+		},
+		// Error case: wrong number of arguments
+		{
+			args:     []Object{&String{Value: "text"}, &Regex{Pattern: "test", Regexp: testRegex1}},
+			expected: "wrong number of arguments. got=2, want=3",
+		},
+		{
+			args:     []Object{&String{Value: "text"}, &Regex{Pattern: "test", Regexp: testRegex1}, &String{Value: "replacement"}, &String{Value: "extra"}},
+			expected: "wrong number of arguments. got=4, want=3",
+		},
+		// Error case: wrong argument types
+		{
+			args:     []Object{&Integer{Value: 123}, &Regex{Pattern: "test", Regexp: testRegex1}, &String{Value: "replacement"}},
+			expected: "first argument to `replace` must be STRING, got INTEGER",
+		},
+		{
+			args:     []Object{&String{Value: "text"}, &String{Value: "not regex"}, &String{Value: "replacement"}},
+			expected: "second argument to `replace` must be REGEX, got STRING",
+		},
+		{
+			args:     []Object{&String{Value: "text"}, &Regex{Pattern: "test", Regexp: testRegex1}, &Integer{Value: 123}},
+			expected: "third argument to `replace` must be STRING, got INTEGER",
+		},
+		// Error case: nil arguments
+		{
+			args:     []Object{nil, &Regex{Pattern: "test", Regexp: testRegex1}, &String{Value: "replacement"}},
+			expected: "first argument to `replace` cannot be nil",
+		},
+		{
+			args:     []Object{&String{Value: "text"}, nil, &String{Value: "replacement"}},
+			expected: "second argument to `replace` cannot be nil",
+		},
+		{
+			args:     []Object{&String{Value: "text"}, &Regex{Pattern: "test", Regexp: testRegex1}, nil},
+			expected: "third argument to `replace` cannot be nil",
+		},
+	}
+
+	replaceBuiltin := GetBuiltinByName("replace")
+	if replaceBuiltin == nil {
+		t.Fatal("replace builtin not found")
+	}
+
+	for i, tt := range tests {
+		result := replaceBuiltin.Fn(tt.args...)
+
+		switch expected := tt.expected.(type) {
+		case string:
+			if strings.HasPrefix(expected, "wrong number of arguments") || strings.HasPrefix(expected, "first argument") || strings.HasPrefix(expected, "second argument") || strings.HasPrefix(expected, "third argument") {
+				// Test error result
+				errObj, ok := result.(*Error)
+				if !ok {
+					t.Errorf("test %d: expected Error, got %T (%+v)", i, result, result)
+					continue
+				}
+				if errObj.Message != expected {
+					t.Errorf("test %d: expected error message %q, got %q", i, expected, errObj.Message)
+				}
+			} else {
+				// Test successful replacement result
+				str, ok := result.(*String)
+				if !ok {
+					t.Errorf("test %d: expected String, got %T (%+v)", i, result, result)
+					continue
+				}
+				if str.Value != expected {
+					t.Errorf("test %d: expected %q, got %q", i, expected, str.Value)
+				}
+			}
+		}
+	}
+}
+
+func TestRegexSplitBuiltin(t *testing.T) {
+	// Create test regex objects
+	testRegex1, _ := regexp.Compile(",")
+	testRegex2, _ := regexp.Compile("\\s+")
+	testRegex3, _ := regexp.Compile("\\d+")
+
+	tests := []struct {
+		args     []Object
+		expected interface{}
+	}{
+		// Normal cases: successful splits
+		{
+			args:     []Object{&String{Value: "a,b,c"}, &Regex{Pattern: ",", Regexp: testRegex1}},
+			expected: []string{"a", "b", "c"},
+		},
+		{
+			args:     []Object{&String{Value: "hello   world    test"}, &Regex{Pattern: "\\s+", Regexp: testRegex2}},
+			expected: []string{"hello", "world", "test"},
+		},
+		{
+			args:     []Object{&String{Value: "abc123def456ghi"}, &Regex{Pattern: "\\d+", Regexp: testRegex3}},
+			expected: []string{"abc", "def", "ghi"},
+		},
+		// Edge cases
+		{
+			args:     []Object{&String{Value: ""}, &Regex{Pattern: ",", Regexp: testRegex1}},
+			expected: []string{""},
+		},
+		{
+			args:     []Object{&String{Value: "no delimiters"}, &Regex{Pattern: ",", Regexp: testRegex1}},
+			expected: []string{"no delimiters"},
+		},
+		// Error case: wrong number of arguments
+		{
+			args:     []Object{&String{Value: "text"}},
+			expected: "wrong number of arguments. got=1, want=2",
+		},
+		{
+			args:     []Object{&String{Value: "text"}, &Regex{Pattern: "test", Regexp: testRegex1}, &String{Value: "extra"}},
+			expected: "wrong number of arguments. got=3, want=2",
+		},
+		// Error case: wrong argument types
+		{
+			args:     []Object{&Integer{Value: 123}, &Regex{Pattern: "test", Regexp: testRegex1}},
+			expected: "first argument to `regex_split` must be STRING, got INTEGER",
+		},
+		{
+			args:     []Object{&String{Value: "text"}, &String{Value: "not regex"}},
+			expected: "second argument to `regex_split` must be REGEX, got STRING",
+		},
+		// Error case: nil arguments
+		{
+			args:     []Object{nil, &Regex{Pattern: "test", Regexp: testRegex1}},
+			expected: "first argument to `regex_split` cannot be nil",
+		},
+		{
+			args:     []Object{&String{Value: "text"}, nil},
+			expected: "second argument to `regex_split` cannot be nil",
+		},
+	}
+
+	regexSplitBuiltin := GetBuiltinByName("regex_split")
+	if regexSplitBuiltin == nil {
+		t.Fatal("regex_split builtin not found")
+	}
+
+	for i, tt := range tests {
+		result := regexSplitBuiltin.Fn(tt.args...)
+
+		switch expected := tt.expected.(type) {
+		case []string:
+			// Test successful split result
+			arr, ok := result.(*Array)
+			if !ok {
+				t.Errorf("test %d: expected Array, got %T (%+v)", i, result, result)
+				continue
+			}
+			if len(arr.Elements) != len(expected) {
+				t.Errorf("test %d: expected %d elements, got %d", i, len(expected), len(arr.Elements))
+				continue
+			}
+			for j, elem := range arr.Elements {
+				str, ok := elem.(*String)
+				if !ok {
+					t.Errorf("test %d: element %d is not String, got %T", i, j, elem)
+					continue
+				}
+				if str.Value != expected[j] {
+					t.Errorf("test %d: element %d expected %q, got %q", i, j, expected[j], str.Value)
+				}
 			}
 		case string:
 			// Test error result

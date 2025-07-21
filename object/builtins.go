@@ -3,6 +3,7 @@ package object
 import (
 	"fmt"
 	"math"
+	"regexp"
 	"strings"
 )
 
@@ -457,6 +458,143 @@ var Builtins = []struct {
 			}
 
 			return &Float{Value: math.Sqrt(value)}
+		},
+		},
+	},
+	{
+		"regex",
+		&Builtin{Fn: func(args ...Object) Object {
+			if len(args) != 1 {
+				return newError("wrong number of arguments. got=%d, want=1",
+					len(args))
+			}
+			if args[0] == nil {
+				return newError("argument to `regex` cannot be nil")
+			}
+			if args[0].Type() != STRING_OBJ {
+				return newError("argument to `regex` must be STRING, got %s",
+					args[0].Type())
+			}
+
+			pattern := args[0].(*String).Value
+			re, err := regexp.Compile(pattern)
+			if err != nil {
+				return newError("invalid regex pattern: %s", err.Error())
+			}
+
+			return &Regex{Pattern: pattern, Regexp: re}
+		},
+		},
+	},
+	{
+		"match",
+		&Builtin{Fn: func(args ...Object) Object {
+			if len(args) != 2 {
+				return newError("wrong number of arguments. got=%d, want=2",
+					len(args))
+			}
+			if args[0] == nil {
+				return newError("first argument to `match` cannot be nil")
+			}
+			if args[1] == nil {
+				return newError("second argument to `match` cannot be nil")
+			}
+			if args[0].Type() != REGEX_OBJ {
+				return newError("first argument to `match` must be REGEX, got %s",
+					args[0].Type())
+			}
+			if args[1].Type() != STRING_OBJ {
+				return newError("second argument to `match` must be STRING, got %s",
+					args[1].Type())
+			}
+
+			regex := args[0].(*Regex)
+			text := args[1].(*String).Value
+
+			matches := regex.Regexp.FindStringSubmatch(text)
+			if matches == nil {
+				return NULL
+			}
+
+			elements := make([]Object, len(matches))
+			for i, match := range matches {
+				elements[i] = &String{Value: match}
+			}
+
+			return &Array{Elements: elements}
+		},
+		},
+	},
+	{
+		"replace",
+		&Builtin{Fn: func(args ...Object) Object {
+			if len(args) != 3 {
+				return newError("wrong number of arguments. got=%d, want=3",
+					len(args))
+			}
+			if args[0] == nil {
+				return newError("first argument to `replace` cannot be nil")
+			}
+			if args[1] == nil {
+				return newError("second argument to `replace` cannot be nil")
+			}
+			if args[2] == nil {
+				return newError("third argument to `replace` cannot be nil")
+			}
+			if args[0].Type() != STRING_OBJ {
+				return newError("first argument to `replace` must be STRING, got %s",
+					args[0].Type())
+			}
+			if args[1].Type() != REGEX_OBJ {
+				return newError("second argument to `replace` must be REGEX, got %s",
+					args[1].Type())
+			}
+			if args[2].Type() != STRING_OBJ {
+				return newError("third argument to `replace` must be STRING, got %s",
+					args[2].Type())
+			}
+
+			text := args[0].(*String).Value
+			regex := args[1].(*Regex)
+			replacement := args[2].(*String).Value
+
+			result := regex.Regexp.ReplaceAllString(text, replacement)
+			return &String{Value: result}
+		},
+		},
+	},
+	{
+		"regex_split",
+		&Builtin{Fn: func(args ...Object) Object {
+			if len(args) != 2 {
+				return newError("wrong number of arguments. got=%d, want=2",
+					len(args))
+			}
+			if args[0] == nil {
+				return newError("first argument to `regex_split` cannot be nil")
+			}
+			if args[1] == nil {
+				return newError("second argument to `regex_split` cannot be nil")
+			}
+			if args[0].Type() != STRING_OBJ {
+				return newError("first argument to `regex_split` must be STRING, got %s",
+					args[0].Type())
+			}
+			if args[1].Type() != REGEX_OBJ {
+				return newError("second argument to `regex_split` must be REGEX, got %s",
+					args[1].Type())
+			}
+
+			text := args[0].(*String).Value
+			regex := args[1].(*Regex)
+
+			parts := regex.Regexp.Split(text, -1)
+			elements := make([]Object, len(parts))
+			for i, part := range parts {
+				elements[i] = &String{Value: part}
+			}
+
+			return &Array{Elements: elements}
 		},
 		},
 	},

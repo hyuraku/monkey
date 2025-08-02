@@ -1,6 +1,7 @@
 package object
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"regexp"
@@ -598,6 +599,155 @@ var Builtins = []struct {
 		},
 		},
 	},
+	{
+		"json_parse",
+		&Builtin{Fn: func(args ...Object) Object {
+			if len(args) != 1 {
+				return newError("wrong number of arguments. got=%d, want=1",
+					len(args))
+			}
+			if args[0] == nil {
+				return newError("argument to `json_parse` cannot be nil")
+			}
+			if args[0].Type() != STRING_OBJ {
+				return newError("argument to `json_parse` must be STRING, got %s",
+					args[0].Type())
+			}
+
+			jsonStr := args[0].(*String).Value
+			
+			// Parse JSON string
+			var jsonValue interface{}
+			err := json.Unmarshal([]byte(jsonStr), &jsonValue)
+			if err != nil {
+				return newError("invalid JSON: %s", err.Error())
+			}
+
+			// Convert Go interface{} to Monkey Object
+			return convertGoValueToMonkeyObject(jsonValue)
+		},
+		},
+	},
+	{
+		"json_stringify",
+		&Builtin{Fn: func(args ...Object) Object {
+			if len(args) < 1 || len(args) > 2 {
+				return newError("wrong number of arguments. got=%d, want=1 or 2",
+					len(args))
+			}
+			if args[0] == nil {
+				return newError("first argument to `json_stringify` cannot be nil")
+			}
+
+			// Convert Monkey Object to Go interface{}
+			goValue, ok := convertMonkeyObjectToGoValue(args[0])
+			if !ok {
+				return newError("cannot convert object to JSON")
+			}
+
+			// Optional indent parameter
+			var jsonBytes []byte
+			var err error
+			if len(args) == 2 {
+				if args[1] == nil {
+					return newError("second argument to `json_stringify` cannot be nil")
+				}
+				if args[1].Type() != STRING_OBJ {
+					return newError("second argument to `json_stringify` must be STRING, got %s",
+						args[1].Type())
+				}
+				indent := args[1].(*String).Value
+				jsonBytes, err = json.MarshalIndent(goValue, "", indent)
+			} else {
+				jsonBytes, err = json.Marshal(goValue)
+			}
+
+			if err != nil {
+				return newError("JSON stringify error: %s", err.Error())
+			}
+
+			return &String{Value: string(jsonBytes)}
+		},
+		},
+	},
+}
+
+// convertGoValueToMonkeyObject converts Go interface{} to Monkey Object
+func convertGoValueToMonkeyObject(value interface{}) Object {
+	switch v := value.(type) {
+	case nil:
+		return NULL
+	case bool:
+		if v {
+			return TRUE
+		}
+		return FALSE
+	case float64:
+		// JSON numbers are always float64, but check if it's actually an integer
+		if v == float64(int64(v)) {
+			return NewInteger(int64(v))
+		}
+		return &Float{Value: v}
+	case string:
+		return &String{Value: v}
+	case []interface{}:
+		elements := make([]Object, len(v))
+		for i, elem := range v {
+			elements[i] = convertGoValueToMonkeyObject(elem)
+		}
+		return &Array{Elements: elements}
+	case map[string]interface{}:
+		pairs := make(map[HashKey]HashPair)
+		for key, val := range v {
+			keyObj := &String{Value: key}
+			valueObj := convertGoValueToMonkeyObject(val)
+			hashKey := keyObj.HashKey()
+			pairs[hashKey] = HashPair{Key: keyObj, Value: valueObj}
+		}
+		return &Hash{Pairs: pairs}
+	default:
+		return NULL
+	}
+}
+
+// convertMonkeyObjectToGoValue converts Monkey Object to Go interface{}
+func convertMonkeyObjectToGoValue(obj Object) (interface{}, bool) {
+	switch o := obj.(type) {
+	case *Integer:
+		return o.Value, true
+	case *Float:
+		return o.Value, true
+	case *Boolean:
+		return o.Value, true
+	case *String:
+		return o.Value, true
+	case *Array:
+		result := make([]interface{}, len(o.Elements))
+		for i, elem := range o.Elements {
+			val, ok := convertMonkeyObjectToGoValue(elem)
+			if !ok {
+				return nil, false
+			}
+			result[i] = val
+		}
+		return result, true
+	case *Hash:
+		result := make(map[string]interface{})
+		for _, pair := range o.Pairs {
+			if keyStr, ok := pair.Key.(*String); ok {
+				val, ok := convertMonkeyObjectToGoValue(pair.Value)
+				if !ok {
+					return nil, false
+				}
+				result[keyStr.Value] = val
+			}
+		}
+		return result, true
+	case *Null:
+		return nil, true
+	default:
+		return nil, false
+	}
 }
 
 func newError(format string, a ...interface{}) *Error {

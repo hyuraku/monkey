@@ -123,6 +123,10 @@ Hello XXX World
 - `max(a, b)`: Returns the larger of two numbers
 - `sqrt(number)`: Returns square root of number (as float)
 
+#### JSON Processing
+- `json_parse(json_string)`: Parses a JSON string and returns the corresponding Monkey object
+- `json_stringify(object [, indent])`: Converts a Monkey object to JSON string with optional indentation
+
 #### I/O
 - `puts(...)`: Outputs values to standard output
 
@@ -187,6 +191,56 @@ puts(sentence);        // Hello beautiful world
 
 let parts = split(sentence, " ");
 puts(len(parts));      // 3
+```
+
+### JSON Processing
+
+```monkey
+// Parsing JSON strings
+let jsonStr = `{"name": "Alice", "age": 30, "active": true}`;
+let data = json_parse(jsonStr);
+puts(data["name"]);     // Alice
+puts(data["age"]);      // 30
+
+// Working with JSON arrays
+let arrayJson = `[1, 2, 3, {"nested": "value"}]`;
+let array = json_parse(arrayJson);
+puts(array[0]);         // 1
+puts(array[3]["nested"]); // value
+
+// Converting objects to JSON
+let person = {"name": "Bob", "age": 25, "hobbies": ["reading", "coding"]};
+let compact = json_stringify(person);
+puts(compact);          // {"age":25,"hobbies":["reading","coding"],"name":"Bob"}
+
+// Pretty-printing with indentation
+let pretty = json_stringify(person, "  ");
+puts(pretty);
+// {
+//   "age": 25,
+//   "hobbies": [
+//     "reading",
+//     "coding"
+//   ],
+//   "name": "Bob"
+// }
+
+// Working with complex nested structures
+let config = {
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "credentials": {
+      "username": "admin",
+      "password": "secret"
+    }
+  },
+  "features": ["auth", "logging", "metrics"]
+};
+
+let configJson = json_stringify(config, "  ");
+let parsed = json_parse(configJson);
+puts(parsed["database"]["host"]);  // localhost
 ```
 
 ## Performance Comparison

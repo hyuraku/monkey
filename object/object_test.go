@@ -1676,3 +1676,197 @@ func TestRegexSplitBuiltin(t *testing.T) {
 		}
 	}
 }
+
+func TestJSONParseBuiltin(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{`"hello"`, "hello"},
+		{`42`, int64(42)},
+		{`3.14`, 3.14},
+		{`true`, true},
+		{`false`, false},
+		{`null`, nil},
+		{`[1, 2, 3]`, []interface{}{int64(1), int64(2), int64(3)}},
+		{`{"name": "test", "value": 42}`, map[string]interface{}{"name": "test", "value": int64(42)}},
+		{`{"array": [1, 2], "nested": {"key": "value"}}`, map[string]interface{}{
+			"array":  []interface{}{int64(1), int64(2)},
+			"nested": map[string]interface{}{"key": "value"},
+		}},
+	}
+
+	for _, tt := range tests {
+		builtin := GetBuiltinByName("json_parse")
+		if builtin == nil {
+			t.Fatalf("json_parse builtin not found")
+		}
+
+		input := &String{Value: tt.input}
+		result := builtin.Fn(input)
+
+		switch expected := tt.expected.(type) {
+		case string:
+			str, ok := result.(*String)
+			if !ok {
+				t.Errorf("object is not String. got=%T (%+v)", result, result)
+				continue
+			}
+			if str.Value != expected {
+				t.Errorf("object has wrong value. got=%q, want=%q", str.Value, expected)
+			}
+
+		case int64:
+			integer, ok := result.(*Integer)
+			if !ok {
+				t.Errorf("object is not Integer. got=%T (%+v)", result, result)
+				continue
+			}
+			if integer.Value != expected {
+				t.Errorf("object has wrong value. got=%d, want=%d", integer.Value, expected)
+			}
+
+		case float64:
+			float, ok := result.(*Float)
+			if !ok {
+				t.Errorf("object is not Float. got=%T (%+v)", result, result)
+				continue
+			}
+			if float.Value != expected {
+				t.Errorf("object has wrong value. got=%f, want=%f", float.Value, expected)
+			}
+
+		case bool:
+			boolean, ok := result.(*Boolean)
+			if !ok {
+				t.Errorf("object is not Boolean. got=%T (%+v)", result, result)
+				continue
+			}
+			if boolean.Value != expected {
+				t.Errorf("object has wrong value. got=%t, want=%t", boolean.Value, expected)
+			}
+
+		case nil:
+			if result != NULL {
+				t.Errorf("object is not NULL. got=%T (%+v)", result, result)
+			}
+
+		case []interface{}:
+			array, ok := result.(*Array)
+			if !ok {
+				t.Errorf("object is not Array. got=%T (%+v)", result, result)
+				continue
+			}
+			if len(array.Elements) != len(expected) {
+				t.Errorf("array has wrong length. got=%d, want=%d", len(array.Elements), len(expected))
+				continue
+			}
+			for i, elem := range expected {
+				switch exp := elem.(type) {
+				case int64:
+					integer, ok := array.Elements[i].(*Integer)
+					if !ok || integer.Value != exp {
+						t.Errorf("array element %d has wrong value. got=%+v, want=%d", i, array.Elements[i], exp)
+					}
+				}
+			}
+
+		case map[string]interface{}:
+			hash, ok := result.(*Hash)
+			if !ok {
+				t.Errorf("object is not Hash. got=%T (%+v)", result, result)
+				continue
+			}
+			if len(hash.Pairs) != len(expected) {
+				t.Errorf("hash has wrong length. got=%d, want=%d", len(hash.Pairs), len(expected))
+			}
+		}
+	}
+}
+
+func TestJSONStringifyBuiltin(t *testing.T) {
+	tests := []struct {
+		input    Object
+		expected string
+	}{
+		{&String{Value: "hello"}, `"hello"`},
+		{NewInteger(42), "42"},
+		{&Float{Value: 3.14}, "3.14"},
+		{TRUE, "true"},
+		{FALSE, "false"},
+		{NULL, "null"},
+		{&Array{Elements: []Object{NewInteger(1), NewInteger(2), NewInteger(3)}}, "[1,2,3]"},
+	}
+
+	for _, tt := range tests {
+		builtin := GetBuiltinByName("json_stringify")
+		if builtin == nil {
+			t.Fatalf("json_stringify builtin not found")
+		}
+
+		result := builtin.Fn(tt.input)
+
+		str, ok := result.(*String)
+		if !ok {
+			t.Errorf("object is not String. got=%T (%+v)", result, result)
+			continue
+		}
+
+		if str.Value != tt.expected {
+			t.Errorf("object has wrong value. got=%q, want=%q", str.Value, tt.expected)
+		}
+	}
+}
+
+func TestJSONStringifyWithIndent(t *testing.T) {
+	hash := &Hash{
+		Pairs: map[HashKey]HashPair{
+			(&String{Value: "name"}).HashKey(): {
+				Key:   &String{Value: "name"},
+				Value: &String{Value: "test"},
+			},
+			(&String{Value: "value"}).HashKey(): {
+				Key:   &String{Value: "value"},
+				Value: NewInteger(42),
+			},
+		},
+	}
+
+	builtin := GetBuiltinByName("json_stringify")
+	if builtin == nil {
+		t.Fatalf("json_stringify builtin not found")
+	}
+
+	result := builtin.Fn(hash, &String{Value: "  "})
+
+	str, ok := result.(*String)
+	if !ok {
+		t.Errorf("object is not String. got=%T (%+v)", result, result)
+		return
+	}
+
+	// Check that the result contains indentation
+	if !strings.Contains(str.Value, "  ") {
+		t.Errorf("result should contain indentation. got=%q", str.Value)
+	}
+}
+
+func TestJSONParseInvalidJSON(t *testing.T) {
+	builtin := GetBuiltinByName("json_parse")
+	if builtin == nil {
+		t.Fatalf("json_parse builtin not found")
+	}
+
+	input := &String{Value: `{"invalid": json`}
+	result := builtin.Fn(input)
+
+	errObj, ok := result.(*Error)
+	if !ok {
+		t.Errorf("object is not Error. got=%T (%+v)", result, result)
+		return
+	}
+
+	if !strings.Contains(errObj.Message, "invalid JSON") {
+		t.Errorf("error message should contain 'invalid JSON'. got=%q", errObj.Message)
+	}
+}

@@ -615,7 +615,7 @@ var Builtins = []struct {
 			}
 
 			jsonStr := args[0].(*String).Value
-			
+
 			// Parse JSON string
 			var jsonValue interface{}
 			err := json.Unmarshal([]byte(jsonStr), &jsonValue)

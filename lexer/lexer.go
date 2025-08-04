@@ -10,14 +10,14 @@ type Lexer struct {
 	position     int
 	readPosition int
 	ch           byte
-	
+
 	// String interning table for literals
 	stringInternTable map[string]string
 }
 
 func New(input string) *Lexer {
 	l := &Lexer{
-		input: input,
+		input:             input,
 		stringInternTable: make(map[string]string),
 	}
 	// l.position = 0, l.readPosition = 0, l.ch = 0にして初期化

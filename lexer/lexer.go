@@ -10,13 +10,28 @@ type Lexer struct {
 	position     int
 	readPosition int
 	ch           byte
+
+	// String interning table for literals
+	stringInternTable map[string]string
 }
 
 func New(input string) *Lexer {
-	l := &Lexer{input: input}
+	l := &Lexer{
+		input:             input,
+		stringInternTable: make(map[string]string),
+	}
 	// l.position = 0, l.readPosition = 0, l.ch = 0にして初期化
 	l.readChar()
 	return l
+}
+
+// internString interns a string to reduce memory usage for duplicate literals
+func (l *Lexer) internString(s string) string {
+	if interned, exists := l.stringInternTable[s]; exists {
+		return interned
+	}
+	l.stringInternTable[s] = s
+	return s
 }
 
 func (l *Lexer) readChar() {
@@ -205,7 +220,8 @@ func (l *Lexer) readIdentifier() string {
 	for isLetter(l.ch) {
 		l.readChar()
 	}
-	return l.input[position:l.position]
+	identifier := l.input[position:l.position]
+	return l.internString(identifier)
 }
 
 func isLetter(ch byte) bool {
@@ -263,7 +279,8 @@ func (l *Lexer) readString() string {
 			break
 		}
 	}
-	return l.input[position:l.position]
+	stringLiteral := l.input[position:l.position]
+	return l.internString(stringLiteral)
 }
 
 func (l *Lexer) readSingleLineComment() string {

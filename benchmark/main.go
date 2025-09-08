@@ -64,7 +64,7 @@ func main() {
 			fmt.Printf("compiler error: %s", err)
 			return
 		}
-		
+
 		// JIT設定
 		jitConfig := &jit.Config{
 			Threshold:         1, // 低い閾値で即座にJIT化
@@ -72,12 +72,12 @@ func main() {
 			EnableProfiling:   true,
 			MaxCodeCacheSize:  10 * 1024 * 1024,
 		}
-		
+
 		// JIT統合VM作成
 		originalVM := vm.New(comp.Bytecode())
 		vmWithJIT := jit.NewVMWithJIT(originalVM, jitConfig)
 		defer vmWithJIT.GetIntegration().Cleanup()
-		
+
 		start := time.Now()
 		err = vmWithJIT.Run() // JIT統合VMでの実行
 		if err != nil {

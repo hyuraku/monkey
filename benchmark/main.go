@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"monkey/compiler"
 	"monkey/evaluator"
-	"monkey/jit"
 	"monkey/lexer"
 	"monkey/object"
 	"monkey/parser"
@@ -13,7 +12,7 @@ import (
 	"time"
 )
 
-var engine = flag.String("engine", "vm", "use 'vm', 'eval', or 'jit'")
+var engine = flag.String("engine", "vm", "use 'vm' or 'eval'")
 
 var input = `
 	let fibonacci = fn(x) {
@@ -32,7 +31,6 @@ var input = `
 
 func main() {
 	flag.Parse()
-
 	var duration time.Duration
 	var result object.Object
 	l := lexer.New(input)
@@ -40,8 +38,7 @@ func main() {
 	p := parser.New(l)
 	program := p.ParseProgram()
 
-	switch *engine {
-	case "vm":
+	if *engine == "vm" {
 		comp := compiler.New()
 		err := comp.Compile(program)
 		if err != nil {
@@ -57,36 +54,7 @@ func main() {
 		}
 		duration = time.Since(start)
 		result = machine.LastPoppedStackElem()
-	case "jit":
-		comp := compiler.New()
-		err := comp.Compile(program)
-		if err != nil {
-			fmt.Printf("compiler error: %s", err)
-			return
-		}
-
-		// JIT設定
-		jitConfig := &jit.Config{
-			Threshold:         1, // 低い閾値で即座にJIT化
-			OptimizationLevel: 2,
-			EnableProfiling:   true,
-			MaxCodeCacheSize:  10 * 1024 * 1024,
-		}
-
-		// JIT統合VM作成
-		originalVM := vm.New(comp.Bytecode())
-		vmWithJIT := jit.NewVMWithJIT(originalVM, jitConfig)
-		defer vmWithJIT.GetIntegration().Cleanup()
-
-		start := time.Now()
-		err = vmWithJIT.Run() // JIT統合VMでの実行
-		if err != nil {
-			fmt.Printf("jit vm error: %s", err)
-			return
-		}
-		result = vmWithJIT.LastPoppedStackElem()
-		duration = time.Since(start)
-	default: // "eval"
+	} else {
 		env := object.NewEnvironment()
 		start := time.Now()
 		result = evaluator.Eval(program, env)

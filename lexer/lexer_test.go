@@ -241,8 +241,8 @@ let x = 5;`
 }
 
 func TestMultiLineComment(t *testing.T) {
-	input := `/* This is a 
-   multi-line comment 
+	input := `/* This is a
+   multi-line comment
    that spans multiple lines */
 let x = 5;
 /* Another multi-line comment */`
@@ -262,6 +262,63 @@ let x = 5;
 	l := New(input)
 
 	for i, tt := range expected {
+		tok := l.NextToken()
+
+		if tok.Type != tt.expectedType {
+			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q",
+				i, tt.expectedType, tok.Type)
+		}
+
+		if tok.Literal != tt.expectedLiteral {
+			t.Fatalf("tests[%d] - literal wrong. expected=%q, got=%q",
+				i, tt.expectedLiteral, tok.Literal)
+		}
+	}
+}
+
+func TestIdentifiersWithDigits(t *testing.T) {
+	input := `let text1 = "hello";
+let var2name = 10;
+let _x3 = text1;
+let abc123def = 42;
+123;
+3.14;
+`
+
+	tests := []struct {
+		expectedType    token.TokenType
+		expectedLiteral string
+	}{
+		{token.LET, "let"},
+		{token.IDENT, "text1"},
+		{token.ASSIGN, "="},
+		{token.STRING, "hello"},
+		{token.SEMICOLON, ";"},
+		{token.LET, "let"},
+		{token.IDENT, "var2name"},
+		{token.ASSIGN, "="},
+		{token.INT, "10"},
+		{token.SEMICOLON, ";"},
+		{token.LET, "let"},
+		{token.IDENT, "_x3"},
+		{token.ASSIGN, "="},
+		{token.IDENT, "text1"},
+		{token.SEMICOLON, ";"},
+		{token.LET, "let"},
+		{token.IDENT, "abc123def"},
+		{token.ASSIGN, "="},
+		{token.INT, "42"},
+		{token.SEMICOLON, ";"},
+		{token.INT, "123"},
+		{token.SEMICOLON, ";"},
+		{token.FLOAT, "3.14"},
+		{token.SEMICOLON, ";"},
+		{token.EOF, ""},
+	}
+
+	l := New(input)
+
+	for i, tt := range tests {
 		tok := l.NextToken()
 
 		if tok.Type != tt.expectedType {

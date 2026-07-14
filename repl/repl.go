@@ -4,8 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	// "monkey/evaluator"
-	// "monkey/object"
 	"monkey/lexer"
 	"monkey/object"
 	"monkey/parser"
@@ -18,7 +16,6 @@ const PROMPT = ">> "
 
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
-	// env := object.NewEnvironment()
 	constants := []object.Object{}
 	globals := make([]object.Object, vm.GlobalsSize)
 	symbolTable := compiler.NewSymbolTable()
@@ -49,14 +46,6 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		// evaluated := evaluator.Eval(program, env)
-		// if evaluated != nil {
-		// 	io.WriteString(out, evaluated.Inspect())
-		// 	io.WriteString(out, "\n")
-		// }
-		// io.WriteString(out, program.String())
-		// io.WriteString(out, "\n")
-
 		comp := compiler.NewWithState(symbolTable, constants)
 		err := comp.Compile(program)
 		if err != nil {
@@ -71,9 +60,6 @@ func Start(in io.Reader, out io.Writer) {
 			fmt.Fprintf(out, "Woops! Executing bytecode failed:\n %s\n", err)
 			continue
 		}
-		// stackTop := machine.StackTop()
-		// io.WriteString(out, stackTop.Inspect())
-		// io.WriteString(out, "\n")
 		lastPopped := machine.LastPoppedStackElem()
 		if lastPopped != nil {
 			io.WriteString(out, lastPopped.Inspect())

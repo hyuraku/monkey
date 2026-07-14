@@ -41,3 +41,5 @@ debug.test
 # ローカル設定
 .env
 .env.local
+
+.serena/

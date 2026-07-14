@@ -82,6 +82,8 @@ The runtime supports:
 - Regular expressions: `regex()`, `match()`, `replace()`, `regex_split()`
 - JSON processing: `json_parse()`, `json_stringify()`
 
+When adding a new built-in function, define it in `object/builtins.go` only; both the evaluator and the compiler/VM register builtins from `object.Builtins` automatically (verified by the dual-execution tests in `conformance/`).
+
 ### Symbol Management
 
 - **Environment** (interpreter): Lexical scoping with environment chaining

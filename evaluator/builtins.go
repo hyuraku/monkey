@@ -2,12 +2,13 @@ package evaluator
 
 import "monkey/object"
 
-var builtins = map[string]*object.Builtin{
-	"len":   object.GetBuiltinByName("len"),
-	"puts":  object.GetBuiltinByName("puts"),
-	"first": object.GetBuiltinByName("first"),
-	"last":  object.GetBuiltinByName("last"),
-	"rest":  object.GetBuiltinByName("rest"),
-	"push":  object.GetBuiltinByName("push"),
-	"pop":   object.GetBuiltinByName("pop"),
+// builtins mirrors object.Builtins so that every builtin available to the
+// compiler/VM path is also available to the tree-walking evaluator.
+// Add new builtins in object/builtins.go only; both engines pick them up.
+var builtins = map[string]*object.Builtin{}
+
+func init() {
+	for _, b := range object.Builtins {
+		builtins[b.Name] = b.Builtin
+	}
 }

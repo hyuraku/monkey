@@ -48,41 +48,34 @@ func runVM(t *testing.T, input string) object.Object {
 }
 
 // builtinCases covers one normal-path case for each of the 21 builtin
-// functions defined in object/builtins.go.
-//
-// evalMissing marks a KNOWN DIVERGENCE: these builtins are registered for
-// the VM path (compiler.New loops over object.Builtins) but not for the
-// evaluator path (evaluator/builtins.go hand-picks only 7 of them), so the
-// evaluator fails with "identifier not found". This is recorded here as a
-// characterization of the current behavior and is scheduled to be fixed in
-// Phase 2 of REFACTOR_PLAN.md, at which point the flags must be removed.
+// functions defined in object/builtins.go. Every case must produce the
+// same result on both execution engines.
 var builtinCases = []struct {
-	name        string
-	input       string
-	want        string // expected Inspect() output on the VM path
-	evalMissing bool
+	name  string
+	input string
+	want  string // expected Inspect() output on both paths
 }{
-	{"len", `len("hello")`, "5", false},
-	{"puts", `puts("conformance")`, "null", false},
-	{"first", `first([1, 2, 3])`, "1", false},
-	{"last", `last([1, 2, 3])`, "3", false},
-	{"rest", `rest([1, 2, 3])`, "[2, 3]", false},
-	{"push", `push([1, 2], 3)`, "[1, 2, 3]", false},
-	{"pop", `pop([1, 2, 3])`, "[1, 2]", false},
-	{"upper", `upper("monkey")`, "MONKEY", true},
-	{"lower", `lower("MONKEY")`, "monkey", true},
-	{"split", `split("a,b,c", ",")`, "[a, b, c]", true},
-	{"join", `join(["a", "b", "c"], "-")`, "a-b-c", true},
-	{"abs", `abs(-5)`, "5", true},
-	{"min", `min(3, 1)`, "1", true},
-	{"max", `max(3, 1)`, "3", true},
-	{"sqrt", `sqrt(4)`, "2.000000", true},
-	{"regex", `regex("a+")`, "/a+/", true},
-	{"match", `match(regex("a+"), "caat")`, "[aa]", true},
-	{"replace", `replace("monkey", regex("o"), "0")`, "m0nkey", true},
-	{"regex_split", `regex_split("a,b", regex(","))`, "[a, b]", true},
-	{"json_parse", `json_parse("[1, 2, 3]")`, "[1, 2, 3]", true},
-	{"json_stringify", `json_stringify([1, 2, 3])`, "[1,2,3]", true},
+	{"len", `len("hello")`, "5"},
+	{"puts", `puts("conformance")`, "null"},
+	{"first", `first([1, 2, 3])`, "1"},
+	{"last", `last([1, 2, 3])`, "3"},
+	{"rest", `rest([1, 2, 3])`, "[2, 3]"},
+	{"push", `push([1, 2], 3)`, "[1, 2, 3]"},
+	{"pop", `pop([1, 2, 3])`, "[1, 2]"},
+	{"upper", `upper("monkey")`, "MONKEY"},
+	{"lower", `lower("MONKEY")`, "monkey"},
+	{"split", `split("a,b,c", ",")`, "[a, b, c]"},
+	{"join", `join(["a", "b", "c"], "-")`, "a-b-c"},
+	{"abs", `abs(-5)`, "5"},
+	{"min", `min(3, 1)`, "1"},
+	{"max", `max(3, 1)`, "3"},
+	{"sqrt", `sqrt(4)`, "2.000000"},
+	{"regex", `regex("a+")`, "/a+/"},
+	{"match", `match(regex("a+"), "caat")`, "[aa]"},
+	{"replace", `replace("monkey", regex("o"), "0")`, "m0nkey"},
+	{"regex_split", `regex_split("a,b", regex(","))`, "[a, b]"},
+	{"json_parse", `json_parse("[1, 2, 3]")`, "[1, 2, 3]"},
+	{"json_stringify", `json_stringify([1, 2, 3])`, "[1,2,3]"},
 }
 
 func TestBuiltinsDualExecution(t *testing.T) {
@@ -102,22 +95,6 @@ func TestBuiltinsDualExecution(t *testing.T) {
 			evalResult := runEval(t, tc.input)
 			if evalResult == nil {
 				t.Fatalf("evaluator returned nil for %q", tc.input)
-			}
-
-			if tc.evalMissing {
-				// Known divergence (see comment on builtinCases): the
-				// evaluator does not register this builtin yet.
-				errObj, ok := evalResult.(*object.Error)
-				if !ok {
-					t.Fatalf("expected known divergence (identifier not found) for %q, got %s (%q) — if the evaluator now supports this builtin, remove the evalMissing flag",
-						tc.input, evalResult.Type(), evalResult.Inspect())
-				}
-				wantMsg := "identifier not found: " + tc.name
-				if errObj.Message != wantMsg {
-					t.Fatalf("unexpected evaluator error for %q: got %q, want %q",
-						tc.input, errObj.Message, wantMsg)
-				}
-				return
 			}
 
 			if errObj, ok := evalResult.(*object.Error); ok {

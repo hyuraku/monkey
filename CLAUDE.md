@@ -10,11 +10,8 @@ This is a Go implementation of the Monkey programming language, featuring both a
 
 ### Build Commands
 ```bash
-# Build main interpreter executable
+# Build the REPL executable (the only entry point)
 go build -o monkey
-
-# Build REPL executable
-go build -o monkey-repl ./cmd/monkey-repl
 
 # Build benchmark tool
 go build -o fibonacci ./benchmark
@@ -33,6 +30,9 @@ go test ./compiler
 go test ./vm
 go test ./object
 go test ./code
+
+# Dual-execution conformance tests (evaluator vs VM)
+go test ./conformance
 ```
 
 ### Benchmark Commands
@@ -44,12 +44,11 @@ go test ./code
 
 ### Running Monkey Programs
 ```bash
-# Execute a Monkey file
-./monkey -e examples/hello.monkey
-
-# Run the interactive REPL
-./monkey-repl
+# Run the interactive REPL (type `exit` to quit)
+./monkey
 ```
+
+There is no file-execution mode: the binary accepts no command-line flags, so the `.monkey` files under `examples/` cannot be run directly. The only way to execute Monkey code is to type it into the REPL, which reads one line at a time (multi-line programs must be joined into a single line first).
 
 ## Architecture Overview
 

@@ -43,3 +43,11 @@ debug.test
 .env.local
 
 .serena/
+
+# 個人用の作業メモ・計画ドキュメント（管理下に置かない）
+/IMPROVEMENTS.md
+/REFACTOR_PLAN.md
+/ROADMAP.md
+/ZERO_INSPIRATIONS.md
+/examples/error_comparison.md
+/conformance/BASELINE.md

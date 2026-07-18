@@ -674,7 +674,7 @@ func TestAbsBuiltin(t *testing.T) {
 			expected: 0.0,
 		},
 		{
-			args:     []Object{&Float{Value: -0.0}},
+			args:     []Object{&Float{Value: -0.0}}, //nolint:staticcheck // explicit signed-zero case (Go folds -0.0 to 0.0)
 			expected: 0.0,
 		},
 		// Edge cases: very large numbers
@@ -836,7 +836,7 @@ func TestMinBuiltin(t *testing.T) {
 			expected: 0,
 		},
 		{
-			args:     []Object{&Float{Value: 0.0}, &Float{Value: -0.0}},
+			args:     []Object{&Float{Value: 0.0}, &Float{Value: -0.0}}, //nolint:staticcheck // explicit signed-zero case (Go folds -0.0 to 0.0)
 			expected: 0.0,
 		},
 		// Error case: wrong number of arguments - too few
@@ -997,7 +997,7 @@ func TestMaxBuiltin(t *testing.T) {
 			expected: 0,
 		},
 		{
-			args:     []Object{&Float{Value: 0.0}, &Float{Value: -0.0}},
+			args:     []Object{&Float{Value: 0.0}, &Float{Value: -0.0}}, //nolint:staticcheck // explicit signed-zero case (Go folds -0.0 to 0.0)
 			expected: 0.0,
 		},
 		// Error case: wrong number of arguments - too few
@@ -1362,8 +1362,8 @@ func TestRegexBuiltin(t *testing.T) {
 func TestMatchBuiltin(t *testing.T) {
 	// Create test regex objects
 	testRegex1, _ := regexp.Compile("hello")
-	testRegex2, _ := regexp.Compile("\\d+")
-	testRegex3, _ := regexp.Compile("(\\w+)@(\\w+)\\.com")
+	testRegex2, _ := regexp.Compile(`\d+`)
+	testRegex3, _ := regexp.Compile(`(\w+)@(\w+)\.com`)
 	testRegex4, _ := regexp.Compile("foo")
 
 	tests := []struct {
@@ -1475,8 +1475,8 @@ func TestMatchBuiltin(t *testing.T) {
 func TestReplaceBuiltin(t *testing.T) {
 	// Create test regex objects
 	testRegex1, _ := regexp.Compile("hello")
-	testRegex2, _ := regexp.Compile("\\d+")
-	testRegex3, _ := regexp.Compile("(\\w+)@(\\w+)\\.com")
+	testRegex2, _ := regexp.Compile(`\d+`)
+	testRegex3, _ := regexp.Compile(`(\w+)@(\w+)\.com`)
 
 	tests := []struct {
 		args     []Object
@@ -1575,8 +1575,8 @@ func TestReplaceBuiltin(t *testing.T) {
 func TestRegexSplitBuiltin(t *testing.T) {
 	// Create test regex objects
 	testRegex1, _ := regexp.Compile(",")
-	testRegex2, _ := regexp.Compile("\\s+")
-	testRegex3, _ := regexp.Compile("\\d+")
+	testRegex2, _ := regexp.Compile(`\s+`)
+	testRegex3, _ := regexp.Compile(`\d+`)
 
 	tests := []struct {
 		args     []Object

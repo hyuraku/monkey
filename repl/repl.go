@@ -24,7 +24,7 @@ func Start(in io.Reader, out io.Writer) {
 	}
 
 	for {
-		fmt.Printf(PROMPT)
+		fmt.Print(PROMPT)
 		scanned := scanner.Scan()
 		if !scanned {
 			return
@@ -49,7 +49,7 @@ func Start(in io.Reader, out io.Writer) {
 		comp := compiler.NewWithState(symbolTable, constants)
 		err := comp.Compile(program)
 		if err != nil {
-			fmt.Fprintf(out, "Woops! Compilation failed:\n %s\n", err)
+			_, _ = fmt.Fprintf(out, "Woops! Compilation failed:\n %s\n", err)
 			continue
 		}
 		code := comp.Bytecode()
@@ -57,20 +57,20 @@ func Start(in io.Reader, out io.Writer) {
 		machine := vm.NewWithGlobalsStore(code, globals)
 		err = machine.Run()
 		if err != nil {
-			fmt.Fprintf(out, "Woops! Executing bytecode failed:\n %s\n", err)
+			_, _ = fmt.Fprintf(out, "Woops! Executing bytecode failed:\n %s\n", err)
 			continue
 		}
 		lastPopped := machine.LastPoppedStackElem()
 		if lastPopped != nil {
-			io.WriteString(out, lastPopped.Inspect())
-			io.WriteString(out, "\n")
+			_, _ = io.WriteString(out, lastPopped.Inspect())
+			_, _ = io.WriteString(out, "\n")
 		}
 	}
 }
 
 func printParserErrors(out io.Writer, errors []string) {
-	io.WriteString(out, " parser errors:\n")
+	_, _ = io.WriteString(out, " parser errors:\n")
 	for _, msg := range errors {
-		io.WriteString(out, "\t"+msg+"\n")
+		_, _ = io.WriteString(out, "\t"+msg+"\n")
 	}
 }

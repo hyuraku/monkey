@@ -5,6 +5,13 @@ import (
 	"strings"
 )
 
+// STATUS: 未統合の実験コード（frozen）。
+//
+// Rust スタイルの診断表示を提供するが、パーサー本体からは呼ばれていない。
+// 本統合には token.Token への行・列情報の追加と lexer/parser の改修が必要
+// （ROADMAP Phase 1.2 相当）。着手判断が付くまで、テスト付きの独立した部品
+// として凍結保存する。削除する場合は diagnostic_test.go ごと除去してよい。
+
 // DiagnosticError はソースコード位置付きのエラー表示情報を持つ
 type DiagnosticError struct {
 	Line    int

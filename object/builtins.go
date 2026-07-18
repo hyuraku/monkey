@@ -16,7 +16,7 @@ var Builtins = []struct {
 		"len",
 		&Builtin{Fn: func(args ...Object) Object {
 			if len(args) != 1 {
-				return newError("wrong number of arguments. got=%d, want=1",
+				return NewError("wrong number of arguments. got=%d, want=1",
 					len(args))
 			}
 			switch arg := args[0].(type) {
@@ -25,7 +25,7 @@ var Builtins = []struct {
 			case *String:
 				return NewInteger(int64(len(arg.Value)))
 			default:
-				return newError("argument to `len` not supported, got %s",
+				return NewError("argument to `len` not supported, got %s",
 					args[0].Type())
 			}
 		},
@@ -45,14 +45,14 @@ var Builtins = []struct {
 		"first",
 		&Builtin{Fn: func(args ...Object) Object {
 			if len(args) != 1 {
-				return newError("wrong number of arguments. got=%d, want=1",
+				return NewError("wrong number of arguments. got=%d, want=1",
 					len(args))
 			}
 			if args[0] == nil {
-				return newError("argument to `first` cannot be nil")
+				return NewError("argument to `first` cannot be nil")
 			}
 			if args[0].Type() != ARRAY_OBJ {
-				return newError("argument to `first` must be ARRAY, got %s",
+				return NewError("argument to `first` must be ARRAY, got %s",
 					args[0].Type())
 			}
 
@@ -70,14 +70,14 @@ var Builtins = []struct {
 		"last",
 		&Builtin{Fn: func(args ...Object) Object {
 			if len(args) != 1 {
-				return newError("wrong number of arguments. got=%d, want=1",
+				return NewError("wrong number of arguments. got=%d, want=1",
 					len(args))
 			}
 			if args[0] == nil {
-				return newError("argument to `last` cannot be nil")
+				return NewError("argument to `last` cannot be nil")
 			}
 			if args[0].Type() != ARRAY_OBJ {
-				return newError("argument to `last` must be ARRAY, got %s",
+				return NewError("argument to `last` must be ARRAY, got %s",
 					args[0].Type())
 			}
 
@@ -95,21 +95,21 @@ var Builtins = []struct {
 		"rest",
 		&Builtin{Fn: func(args ...Object) Object {
 			if len(args) != 1 {
-				return newError("wrong number of arguments. got=%d, want=1",
+				return NewError("wrong number of arguments. got=%d, want=1",
 					len(args))
 			}
 			if args[0] == nil {
-				return newError("argument to `rest` cannot be nil")
+				return NewError("argument to `rest` cannot be nil")
 			}
 			if args[0].Type() != ARRAY_OBJ {
-				return newError("argument to `rest` must be ARRAY, got %s",
+				return NewError("argument to `rest` must be ARRAY, got %s",
 					args[0].Type())
 			}
 
 			arr := args[0].(*Array)
 			length := len(arr.Elements)
 			if length > 0 {
-				newElements := make([]Object, length-1, length-1)
+				newElements := make([]Object, length-1)
 				copy(newElements, arr.Elements[1:length])
 				return &Array{Elements: newElements}
 			}
@@ -122,21 +122,21 @@ var Builtins = []struct {
 		"push",
 		&Builtin{Fn: func(args ...Object) Object {
 			if len(args) != 2 {
-				return newError("wrong number of arguments. got=%d, want=2",
+				return NewError("wrong number of arguments. got=%d, want=2",
 					len(args))
 			}
 			if args[0] == nil {
-				return newError("argument to `push` cannot be nil")
+				return NewError("argument to `push` cannot be nil")
 			}
 			if args[0].Type() != ARRAY_OBJ {
-				return newError("argument to `push` must be ARRAY, got %s",
+				return NewError("argument to `push` must be ARRAY, got %s",
 					args[0].Type())
 			}
 
 			arr := args[0].(*Array)
 			length := len(arr.Elements)
 
-			newElements := make([]Object, length+1, length+1)
+			newElements := make([]Object, length+1)
 			copy(newElements, arr.Elements)
 			newElements[length] = args[1]
 
@@ -148,21 +148,21 @@ var Builtins = []struct {
 		"pop",
 		&Builtin{Fn: func(args ...Object) Object {
 			if len(args) != 1 {
-				return newError("wrong number of arguments. got=%d, want=1",
+				return NewError("wrong number of arguments. got=%d, want=1",
 					len(args))
 			}
 			if args[0] == nil {
-				return newError("argument to `pop` cannot be nil")
+				return NewError("argument to `pop` cannot be nil")
 			}
 			if args[0].Type() != ARRAY_OBJ {
-				return newError("argument to `pop` must be ARRAY, got %s",
+				return NewError("argument to `pop` must be ARRAY, got %s",
 					args[0].Type())
 			}
 
 			arr := args[0].(*Array)
 			length := len(arr.Elements)
 			if length > 0 {
-				newElements := make([]Object, length-1, length-1)
+				newElements := make([]Object, length-1)
 				copy(newElements, arr.Elements[0:length-1])
 				return &Array{Elements: newElements}
 			}
@@ -175,14 +175,14 @@ var Builtins = []struct {
 		"upper",
 		&Builtin{Fn: func(args ...Object) Object {
 			if len(args) != 1 {
-				return newError("wrong number of arguments. got=%d, want=1",
+				return NewError("wrong number of arguments. got=%d, want=1",
 					len(args))
 			}
 			if args[0] == nil {
-				return newError("argument to `upper` cannot be nil")
+				return NewError("argument to `upper` cannot be nil")
 			}
 			if args[0].Type() != STRING_OBJ {
-				return newError("argument to `upper` must be STRING, got %s",
+				return NewError("argument to `upper` must be STRING, got %s",
 					args[0].Type())
 			}
 
@@ -195,14 +195,14 @@ var Builtins = []struct {
 		"lower",
 		&Builtin{Fn: func(args ...Object) Object {
 			if len(args) != 1 {
-				return newError("wrong number of arguments. got=%d, want=1",
+				return NewError("wrong number of arguments. got=%d, want=1",
 					len(args))
 			}
 			if args[0] == nil {
-				return newError("argument to `lower` cannot be nil")
+				return NewError("argument to `lower` cannot be nil")
 			}
 			if args[0].Type() != STRING_OBJ {
-				return newError("argument to `lower` must be STRING, got %s",
+				return NewError("argument to `lower` must be STRING, got %s",
 					args[0].Type())
 			}
 
@@ -215,21 +215,21 @@ var Builtins = []struct {
 		"split",
 		&Builtin{Fn: func(args ...Object) Object {
 			if len(args) != 2 {
-				return newError("wrong number of arguments. got=%d, want=2",
+				return NewError("wrong number of arguments. got=%d, want=2",
 					len(args))
 			}
 			if args[0] == nil {
-				return newError("first argument to `split` cannot be nil")
+				return NewError("first argument to `split` cannot be nil")
 			}
 			if args[1] == nil {
-				return newError("second argument to `split` cannot be nil")
+				return NewError("second argument to `split` cannot be nil")
 			}
 			if args[0].Type() != STRING_OBJ {
-				return newError("first argument to `split` must be STRING, got %s",
+				return NewError("first argument to `split` must be STRING, got %s",
 					args[0].Type())
 			}
 			if args[1].Type() != STRING_OBJ {
-				return newError("second argument to `split` must be STRING, got %s",
+				return NewError("second argument to `split` must be STRING, got %s",
 					args[1].Type())
 			}
 
@@ -237,7 +237,7 @@ var Builtins = []struct {
 			delimiter := args[1].(*String)
 
 			if delimiter.Value == "" {
-				return newError("delimiter cannot be empty")
+				return NewError("delimiter cannot be empty")
 			}
 
 			parts := strings.Split(str.Value, delimiter.Value)
@@ -254,21 +254,21 @@ var Builtins = []struct {
 		"join",
 		&Builtin{Fn: func(args ...Object) Object {
 			if len(args) != 2 {
-				return newError("wrong number of arguments. got=%d, want=2",
+				return NewError("wrong number of arguments. got=%d, want=2",
 					len(args))
 			}
 			if args[0] == nil {
-				return newError("first argument to `join` cannot be nil")
+				return NewError("first argument to `join` cannot be nil")
 			}
 			if args[1] == nil {
-				return newError("second argument to `join` cannot be nil")
+				return NewError("second argument to `join` cannot be nil")
 			}
 			if args[0].Type() != ARRAY_OBJ {
-				return newError("first argument to `join` must be ARRAY, got %s",
+				return NewError("first argument to `join` must be ARRAY, got %s",
 					args[0].Type())
 			}
 			if args[1].Type() != STRING_OBJ {
-				return newError("second argument to `join` must be STRING, got %s",
+				return NewError("second argument to `join` must be STRING, got %s",
 					args[1].Type())
 			}
 
@@ -295,11 +295,11 @@ var Builtins = []struct {
 		"abs",
 		&Builtin{Fn: func(args ...Object) Object {
 			if len(args) != 1 {
-				return newError("wrong number of arguments. got=%d, want=1",
+				return NewError("wrong number of arguments. got=%d, want=1",
 					len(args))
 			}
 			if args[0] == nil {
-				return newError("argument to `abs` cannot be nil")
+				return NewError("argument to `abs` cannot be nil")
 			}
 
 			switch arg := args[0].(type) {
@@ -312,7 +312,7 @@ var Builtins = []struct {
 			case *Float:
 				return &Float{Value: math.Abs(arg.Value)}
 			default:
-				return newError("argument to `abs` must be INTEGER or FLOAT, got %s",
+				return NewError("argument to `abs` must be INTEGER or FLOAT, got %s",
 					args[0].Type())
 			}
 		},
@@ -322,14 +322,14 @@ var Builtins = []struct {
 		"min",
 		&Builtin{Fn: func(args ...Object) Object {
 			if len(args) != 2 {
-				return newError("wrong number of arguments. got=%d, want=2",
+				return NewError("wrong number of arguments. got=%d, want=2",
 					len(args))
 			}
 			if args[0] == nil {
-				return newError("first argument to `min` cannot be nil")
+				return NewError("first argument to `min` cannot be nil")
 			}
 			if args[1] == nil {
-				return newError("second argument to `min` cannot be nil")
+				return NewError("second argument to `min` cannot be nil")
 			}
 
 			// Check first argument type
@@ -343,7 +343,7 @@ var Builtins = []struct {
 				val1 = arg.Value
 				isFloat1 = true
 			default:
-				return newError("first argument to `min` must be INTEGER or FLOAT, got %s",
+				return NewError("first argument to `min` must be INTEGER or FLOAT, got %s",
 					args[0].Type())
 			}
 
@@ -358,7 +358,7 @@ var Builtins = []struct {
 				val2 = arg.Value
 				isFloat2 = true
 			default:
-				return newError("second argument to `min` must be INTEGER or FLOAT, got %s",
+				return NewError("second argument to `min` must be INTEGER or FLOAT, got %s",
 					args[1].Type())
 			}
 
@@ -379,14 +379,14 @@ var Builtins = []struct {
 		"max",
 		&Builtin{Fn: func(args ...Object) Object {
 			if len(args) != 2 {
-				return newError("wrong number of arguments. got=%d, want=2",
+				return NewError("wrong number of arguments. got=%d, want=2",
 					len(args))
 			}
 			if args[0] == nil {
-				return newError("first argument to `max` cannot be nil")
+				return NewError("first argument to `max` cannot be nil")
 			}
 			if args[1] == nil {
-				return newError("second argument to `max` cannot be nil")
+				return NewError("second argument to `max` cannot be nil")
 			}
 
 			// Check first argument type
@@ -400,7 +400,7 @@ var Builtins = []struct {
 				val1 = arg.Value
 				isFloat1 = true
 			default:
-				return newError("first argument to `max` must be INTEGER or FLOAT, got %s",
+				return NewError("first argument to `max` must be INTEGER or FLOAT, got %s",
 					args[0].Type())
 			}
 
@@ -415,7 +415,7 @@ var Builtins = []struct {
 				val2 = arg.Value
 				isFloat2 = true
 			default:
-				return newError("second argument to `max` must be INTEGER or FLOAT, got %s",
+				return NewError("second argument to `max` must be INTEGER or FLOAT, got %s",
 					args[1].Type())
 			}
 
@@ -436,11 +436,11 @@ var Builtins = []struct {
 		"sqrt",
 		&Builtin{Fn: func(args ...Object) Object {
 			if len(args) != 1 {
-				return newError("wrong number of arguments. got=%d, want=1",
+				return NewError("wrong number of arguments. got=%d, want=1",
 					len(args))
 			}
 			if args[0] == nil {
-				return newError("argument to `sqrt` cannot be nil")
+				return NewError("argument to `sqrt` cannot be nil")
 			}
 
 			var value float64
@@ -450,12 +450,12 @@ var Builtins = []struct {
 			case *Float:
 				value = arg.Value
 			default:
-				return newError("argument to `sqrt` must be INTEGER or FLOAT, got %s",
+				return NewError("argument to `sqrt` must be INTEGER or FLOAT, got %s",
 					args[0].Type())
 			}
 
 			if value < 0 {
-				return newError("sqrt of negative number is not supported")
+				return NewError("sqrt of negative number is not supported")
 			}
 
 			return &Float{Value: math.Sqrt(value)}
@@ -466,21 +466,21 @@ var Builtins = []struct {
 		"regex",
 		&Builtin{Fn: func(args ...Object) Object {
 			if len(args) != 1 {
-				return newError("wrong number of arguments. got=%d, want=1",
+				return NewError("wrong number of arguments. got=%d, want=1",
 					len(args))
 			}
 			if args[0] == nil {
-				return newError("argument to `regex` cannot be nil")
+				return NewError("argument to `regex` cannot be nil")
 			}
 			if args[0].Type() != STRING_OBJ {
-				return newError("argument to `regex` must be STRING, got %s",
+				return NewError("argument to `regex` must be STRING, got %s",
 					args[0].Type())
 			}
 
 			pattern := args[0].(*String).Value
 			re, err := regexp.Compile(pattern)
 			if err != nil {
-				return newError("invalid regex pattern: %s", err.Error())
+				return NewError("invalid regex pattern: %s", err.Error())
 			}
 
 			return &Regex{Pattern: pattern, Regexp: re}
@@ -491,21 +491,21 @@ var Builtins = []struct {
 		"match",
 		&Builtin{Fn: func(args ...Object) Object {
 			if len(args) != 2 {
-				return newError("wrong number of arguments. got=%d, want=2",
+				return NewError("wrong number of arguments. got=%d, want=2",
 					len(args))
 			}
 			if args[0] == nil {
-				return newError("first argument to `match` cannot be nil")
+				return NewError("first argument to `match` cannot be nil")
 			}
 			if args[1] == nil {
-				return newError("second argument to `match` cannot be nil")
+				return NewError("second argument to `match` cannot be nil")
 			}
 			if args[0].Type() != REGEX_OBJ {
-				return newError("first argument to `match` must be REGEX, got %s",
+				return NewError("first argument to `match` must be REGEX, got %s",
 					args[0].Type())
 			}
 			if args[1].Type() != STRING_OBJ {
-				return newError("second argument to `match` must be STRING, got %s",
+				return NewError("second argument to `match` must be STRING, got %s",
 					args[1].Type())
 			}
 
@@ -530,28 +530,28 @@ var Builtins = []struct {
 		"replace",
 		&Builtin{Fn: func(args ...Object) Object {
 			if len(args) != 3 {
-				return newError("wrong number of arguments. got=%d, want=3",
+				return NewError("wrong number of arguments. got=%d, want=3",
 					len(args))
 			}
 			if args[0] == nil {
-				return newError("first argument to `replace` cannot be nil")
+				return NewError("first argument to `replace` cannot be nil")
 			}
 			if args[1] == nil {
-				return newError("second argument to `replace` cannot be nil")
+				return NewError("second argument to `replace` cannot be nil")
 			}
 			if args[2] == nil {
-				return newError("third argument to `replace` cannot be nil")
+				return NewError("third argument to `replace` cannot be nil")
 			}
 			if args[0].Type() != STRING_OBJ {
-				return newError("first argument to `replace` must be STRING, got %s",
+				return NewError("first argument to `replace` must be STRING, got %s",
 					args[0].Type())
 			}
 			if args[1].Type() != REGEX_OBJ {
-				return newError("second argument to `replace` must be REGEX, got %s",
+				return NewError("second argument to `replace` must be REGEX, got %s",
 					args[1].Type())
 			}
 			if args[2].Type() != STRING_OBJ {
-				return newError("third argument to `replace` must be STRING, got %s",
+				return NewError("third argument to `replace` must be STRING, got %s",
 					args[2].Type())
 			}
 
@@ -568,21 +568,21 @@ var Builtins = []struct {
 		"regex_split",
 		&Builtin{Fn: func(args ...Object) Object {
 			if len(args) != 2 {
-				return newError("wrong number of arguments. got=%d, want=2",
+				return NewError("wrong number of arguments. got=%d, want=2",
 					len(args))
 			}
 			if args[0] == nil {
-				return newError("first argument to `regex_split` cannot be nil")
+				return NewError("first argument to `regex_split` cannot be nil")
 			}
 			if args[1] == nil {
-				return newError("second argument to `regex_split` cannot be nil")
+				return NewError("second argument to `regex_split` cannot be nil")
 			}
 			if args[0].Type() != STRING_OBJ {
-				return newError("first argument to `regex_split` must be STRING, got %s",
+				return NewError("first argument to `regex_split` must be STRING, got %s",
 					args[0].Type())
 			}
 			if args[1].Type() != REGEX_OBJ {
-				return newError("second argument to `regex_split` must be REGEX, got %s",
+				return NewError("second argument to `regex_split` must be REGEX, got %s",
 					args[1].Type())
 			}
 
@@ -603,14 +603,14 @@ var Builtins = []struct {
 		"json_parse",
 		&Builtin{Fn: func(args ...Object) Object {
 			if len(args) != 1 {
-				return newError("wrong number of arguments. got=%d, want=1",
+				return NewError("wrong number of arguments. got=%d, want=1",
 					len(args))
 			}
 			if args[0] == nil {
-				return newError("argument to `json_parse` cannot be nil")
+				return NewError("argument to `json_parse` cannot be nil")
 			}
 			if args[0].Type() != STRING_OBJ {
-				return newError("argument to `json_parse` must be STRING, got %s",
+				return NewError("argument to `json_parse` must be STRING, got %s",
 					args[0].Type())
 			}
 
@@ -620,7 +620,7 @@ var Builtins = []struct {
 			var jsonValue interface{}
 			err := json.Unmarshal([]byte(jsonStr), &jsonValue)
 			if err != nil {
-				return newError("invalid JSON: %s", err.Error())
+				return NewError("invalid JSON: %s", err.Error())
 			}
 
 			// Convert Go interface{} to Monkey Object
@@ -632,17 +632,17 @@ var Builtins = []struct {
 		"json_stringify",
 		&Builtin{Fn: func(args ...Object) Object {
 			if len(args) < 1 || len(args) > 2 {
-				return newError("wrong number of arguments. got=%d, want=1 or 2",
+				return NewError("wrong number of arguments. got=%d, want=1 or 2",
 					len(args))
 			}
 			if args[0] == nil {
-				return newError("first argument to `json_stringify` cannot be nil")
+				return NewError("first argument to `json_stringify` cannot be nil")
 			}
 
 			// Convert Monkey Object to Go interface{}
 			goValue, ok := convertMonkeyObjectToGoValue(args[0])
 			if !ok {
-				return newError("cannot convert object to JSON")
+				return NewError("cannot convert object to JSON")
 			}
 
 			// Optional indent parameter
@@ -650,10 +650,10 @@ var Builtins = []struct {
 			var err error
 			if len(args) == 2 {
 				if args[1] == nil {
-					return newError("second argument to `json_stringify` cannot be nil")
+					return NewError("second argument to `json_stringify` cannot be nil")
 				}
 				if args[1].Type() != STRING_OBJ {
-					return newError("second argument to `json_stringify` must be STRING, got %s",
+					return NewError("second argument to `json_stringify` must be STRING, got %s",
 						args[1].Type())
 				}
 				indent := args[1].(*String).Value
@@ -663,7 +663,7 @@ var Builtins = []struct {
 			}
 
 			if err != nil {
-				return newError("JSON stringify error: %s", err.Error())
+				return NewError("JSON stringify error: %s", err.Error())
 			}
 
 			return &String{Value: string(jsonBytes)}
@@ -750,7 +750,9 @@ func convertMonkeyObjectToGoValue(obj Object) (interface{}, bool) {
 	}
 }
 
-func newError(format string, a ...interface{}) *Error {
+// NewError builds an *Error with a printf-formatted message. It is the single
+// shared constructor used by both the evaluator and the built-in functions.
+func NewError(format string, a ...interface{}) *Error {
 	return &Error{Message: fmt.Sprintf(format, a...)}
 }
 

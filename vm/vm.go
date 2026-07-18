@@ -124,26 +124,14 @@ func (vm *VM) Run() error {
 		case code.OpLogicalAnd:
 			pos := int(code.ReadUint16(ins[ip+1:]))
 			vm.currentFrame().ip += 2
-
-			left := vm.pop()
-			if !isTruthy(left) {
-				vm.currentFrame().ip = pos - 1
-				err := vm.push(left)
-				if err != nil {
-					return err
-				}
+			if err := vm.executeShortCircuitJump(pos, false); err != nil {
+				return err
 			}
 		case code.OpLogicalOr:
 			pos := int(code.ReadUint16(ins[ip+1:]))
 			vm.currentFrame().ip += 2
-
-			left := vm.pop()
-			if isTruthy(left) {
-				vm.currentFrame().ip = pos - 1
-				err := vm.push(left)
-				if err != nil {
-					return err
-				}
+			if err := vm.executeShortCircuitJump(pos, true); err != nil {
+				return err
 			}
 		case code.OpNull:
 			err := vm.push(object.NULL)
@@ -352,8 +340,7 @@ func (vm *VM) executeBinaryIntegerOperation(op code.Opcode, left, right object.O
 		return fmt.Errorf("unknown operator: %d", op)
 	}
 
-	vm.push(object.NewInteger(result))
-	return nil
+	return vm.push(object.NewInteger(result))
 }
 
 func (vm *VM) executeBinaryFloatOperation(op code.Opcode, left, right object.Object) error {
@@ -375,8 +362,7 @@ func (vm *VM) executeBinaryFloatOperation(op code.Opcode, left, right object.Obj
 	default:
 		return fmt.Errorf("unknown operator: %d", op)
 	}
-	vm.push(&object.Float{Value: result})
-	return nil
+	return vm.push(&object.Float{Value: result})
 }
 
 func (vm *VM) executeBinaryStringOperation(op code.Opcode, left, right object.Object) error {
@@ -391,7 +377,20 @@ func (vm *VM) executeBinaryStringOperation(op code.Opcode, left, right object.Ob
 		return fmt.Errorf("unknown operator: %d", op)
 	}
 
-	vm.push(&object.String{Value: result})
+	return vm.push(&object.String{Value: result})
+}
+
+// executeShortCircuitJump implements the shared logic of the && (OpLogicalAnd)
+// and || (OpLogicalOr) short-circuit opcodes. When the left operand's
+// truthiness equals jumpWhenTruthy, evaluation short-circuits: it jumps past
+// the right operand (to pos) and leaves left on the stack as the result.
+// Otherwise it falls through so the already-emitted right operand is evaluated.
+func (vm *VM) executeShortCircuitJump(pos int, jumpWhenTruthy bool) error {
+	left := vm.pop()
+	if isTruthy(left) == jumpWhenTruthy {
+		vm.currentFrame().ip = pos - 1
+		return vm.push(left)
+	}
 	return nil
 }
 
@@ -597,11 +596,9 @@ func (vm *VM) callBuiltin(fn *object.Builtin, numArgs int) error {
 	result := fn.Fn(args...)
 	vm.sp = vm.sp - numArgs - 1
 	if result != nil {
-		vm.push(result)
-	} else {
-		vm.push(object.NULL)
+		return vm.push(result)
 	}
-	return nil
+	return vm.push(object.NULL)
 }
 
 func (vm *VM) callClosure(closure *object.Closure, numArgs int) error {

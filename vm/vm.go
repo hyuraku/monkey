@@ -124,26 +124,14 @@ func (vm *VM) Run() error {
 		case code.OpLogicalAnd:
 			pos := int(code.ReadUint16(ins[ip+1:]))
 			vm.currentFrame().ip += 2
-
-			left := vm.pop()
-			if !isTruthy(left) {
-				vm.currentFrame().ip = pos - 1
-				err := vm.push(left)
-				if err != nil {
-					return err
-				}
+			if err := vm.executeShortCircuitJump(pos, false); err != nil {
+				return err
 			}
 		case code.OpLogicalOr:
 			pos := int(code.ReadUint16(ins[ip+1:]))
 			vm.currentFrame().ip += 2
-
-			left := vm.pop()
-			if isTruthy(left) {
-				vm.currentFrame().ip = pos - 1
-				err := vm.push(left)
-				if err != nil {
-					return err
-				}
+			if err := vm.executeShortCircuitJump(pos, true); err != nil {
+				return err
 			}
 		case code.OpNull:
 			err := vm.push(object.NULL)
@@ -390,6 +378,20 @@ func (vm *VM) executeBinaryStringOperation(op code.Opcode, left, right object.Ob
 	}
 
 	return vm.push(&object.String{Value: result})
+}
+
+// executeShortCircuitJump implements the shared logic of the && (OpLogicalAnd)
+// and || (OpLogicalOr) short-circuit opcodes. When the left operand's
+// truthiness equals jumpWhenTruthy, evaluation short-circuits: it jumps past
+// the right operand (to pos) and leaves left on the stack as the result.
+// Otherwise it falls through so the already-emitted right operand is evaluated.
+func (vm *VM) executeShortCircuitJump(pos int, jumpWhenTruthy bool) error {
+	left := vm.pop()
+	if isTruthy(left) == jumpWhenTruthy {
+		vm.currentFrame().ip = pos - 1
+		return vm.push(left)
+	}
+	return nil
 }
 
 func (vm *VM) executeComparison(op code.Opcode) error {

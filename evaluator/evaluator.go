@@ -1,7 +1,6 @@
 package evaluator
 
 import (
-	"fmt"
 	"monkey/ast"
 	"monkey/object"
 )
@@ -36,7 +35,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		if isError(right) {
 			return right
 		}
-		return evalInflixExpression(node.Operator, left, right)
+		return evalInfixExpression(node.Operator, left, right)
 	case *ast.BlockStatement:
 		return evalBlockStatement(node, env)
 	case *ast.IfExpression:
@@ -121,7 +120,7 @@ func evalPrefixExpression(operator string, right object.Object) object.Object {
 	case "-":
 		return evalMinusPrefixOperatorExpression(right)
 	default:
-		return newError("unknown operator: %s%s", operator, right.Type())
+		return object.NewError("unknown operator: %s%s", operator, right.Type())
 	}
 }
 
@@ -146,11 +145,11 @@ func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 		value := right.(*object.Float).Value
 		return &object.Float{Value: -value}
 	} else {
-		return newError("unknown operator: -%s", right.Type())
+		return object.NewError("unknown operator: -%s", right.Type())
 	}
 }
 
-func evalInflixExpression(operator string, left, right object.Object) object.Object {
+func evalInfixExpression(operator string, left, right object.Object) object.Object {
 	switch {
 	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 		return evalIntegerInfixExpression(operator, left, right)
@@ -167,11 +166,11 @@ func evalInflixExpression(operator string, left, right object.Object) object.Obj
 	case operator == "!=":
 		return nativeBoolToBooleanObject(left != right)
 	case left.Type() != right.Type():
-		return newError("type mismatch: %s %s %s", left.Type(), operator, right.Type())
+		return object.NewError("type mismatch: %s %s %s", left.Type(), operator, right.Type())
 	case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
 		return evalStringInfixExpression(operator, left, right)
 	default:
-		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
+		return object.NewError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}
 }
 
@@ -201,7 +200,7 @@ func evalIntegerInfixExpression(operator string, left, right object.Object) obje
 	case "!=":
 		return nativeBoolToBooleanObject(leftVal != rightVal)
 	default:
-		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
+		return object.NewError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}
 }
 
@@ -231,7 +230,7 @@ func evalFloatInfixExpression(operator string, left, right object.Object) object
 	case "!=":
 		return nativeBoolToBooleanObject(leftVal != rightVal)
 	default:
-		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
+		return object.NewError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}
 }
 
@@ -297,10 +296,6 @@ func evalBlockStatement(block *ast.BlockStatement, env *object.Environment) obje
 	return result
 }
 
-func newError(format string, a ...interface{}) *object.Error {
-	return &object.Error{Message: fmt.Sprintf(format, a...)}
-}
-
 func isError(obj object.Object) bool {
 	if obj != nil {
 		return obj.Type() == object.ERROR_OBJ
@@ -317,7 +312,7 @@ func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object
 		return builtin
 	}
 
-	return newError("identifier not found: %s", node.Value)
+	return object.NewError("identifier not found: %s", node.Value)
 }
 
 func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Object {
@@ -346,7 +341,7 @@ func applyFunction(fn object.Object, args []object.Object) object.Object {
 		}
 		return object.NULL
 	default:
-		return newError("not a function: %s", fn.Type())
+		return object.NewError("not a function: %s", fn.Type())
 	}
 }
 
@@ -370,7 +365,7 @@ func unwrapReturnValue(obj object.Object) object.Object {
 
 func evalStringInfixExpression(operator string, left, right object.Object) object.Object {
 	if operator != "+" {
-		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
+		return object.NewError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}
 
 	leftVal := left.(*object.String).Value
@@ -385,7 +380,7 @@ func evalIndexExpression(left, index object.Object) object.Object {
 	case left.Type() == object.HASH_OBJ:
 		return evalHashIndexExpression(left, index)
 	default:
-		return newError("index operator not supported: %s", left.Type())
+		return object.NewError("index operator not supported: %s", left.Type())
 	}
 }
 
@@ -412,7 +407,7 @@ func evalHashLiteral(node *ast.HashLiteral, env *object.Environment) object.Obje
 
 		hashKey, ok := key.(object.Hashable)
 		if !ok {
-			return newError("unusable as hash key: %s", key.Type())
+			return object.NewError("unusable as hash key: %s", key.Type())
 		}
 
 		value := Eval(valueNode, env)
@@ -432,7 +427,7 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 
 	key, ok := index.(object.Hashable)
 	if !ok {
-		return newError("unusable as hash key: %s", index.Type())
+		return object.NewError("unusable as hash key: %s", index.Type())
 	}
 
 	pair, ok := hashObject.Pairs[key.HashKey()]
@@ -461,7 +456,7 @@ func evalLogicalInfixExpression(node *ast.InfixExpression, env *object.Environme
 		}
 		return Eval(node.Right, env)
 	default:
-		return newError("unknown logical operator: %s", node.Operator)
+		return object.NewError("unknown logical operator: %s", node.Operator)
 	}
 }
 
@@ -469,7 +464,7 @@ func evalAssignmentExpression(node *ast.AssignmentExpression, env *object.Enviro
 	// Get the current value of the identifier
 	currentVal, exists := env.Get(node.Name.Value)
 	if !exists {
-		return newError("identifier not found: %s", node.Name.Value)
+		return object.NewError("identifier not found: %s", node.Name.Value)
 	}
 
 	// Evaluate the right-hand side expression
@@ -482,15 +477,15 @@ func evalAssignmentExpression(node *ast.AssignmentExpression, env *object.Enviro
 	var newVal object.Object
 	switch node.Operator {
 	case "+=":
-		newVal = evalInflixExpression("+", currentVal, rightVal)
+		newVal = evalInfixExpression("+", currentVal, rightVal)
 	case "-=":
-		newVal = evalInflixExpression("-", currentVal, rightVal)
+		newVal = evalInfixExpression("-", currentVal, rightVal)
 	case "*=":
-		newVal = evalInflixExpression("*", currentVal, rightVal)
+		newVal = evalInfixExpression("*", currentVal, rightVal)
 	case "/=":
-		newVal = evalInflixExpression("/", currentVal, rightVal)
+		newVal = evalInfixExpression("/", currentVal, rightVal)
 	default:
-		return newError("unknown assignment operator: %s", node.Operator)
+		return object.NewError("unknown assignment operator: %s", node.Operator)
 	}
 
 	if isError(newVal) {

@@ -43,17 +43,17 @@ func TestIntegerCaching(t *testing.T) {
 
 func TestBooleanSingletons(t *testing.T) {
 	// Test that TRUE instances are the same
-	if TRUE != TRUE {
+	if TRUE != TRUE { //nolint:staticcheck // intentionally asserts singleton identity
 		t.Error("TRUE instances should be identical")
 	}
 
 	// Test that FALSE instances are the same
-	if FALSE != FALSE {
+	if FALSE != FALSE { //nolint:staticcheck // intentionally asserts singleton identity
 		t.Error("FALSE instances should be identical")
 	}
 
 	// Test that NULL instances are the same
-	if NULL != NULL {
+	if NULL != NULL { //nolint:staticcheck // intentionally asserts singleton identity
 		t.Error("NULL instances should be identical")
 	}
 

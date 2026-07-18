@@ -258,19 +258,6 @@ func (l *Lexer) skipWhitespace() {
 	}
 }
 
-func (l *Lexer) skipComments() {
-	for {
-		if l.ch == '/' && l.peekChar() == '/' {
-			l.readSingleLineComment()
-		} else if l.ch == '/' && l.peekChar() == '*' {
-			l.readMultiLineComment()
-		} else {
-			break
-		}
-		l.skipWhitespace()
-	}
-}
-
 func (l *Lexer) readString() string {
 	position := l.position + 1
 	for {
@@ -308,11 +295,8 @@ func (l *Lexer) readMultiLineComment() string {
 	l.readChar() // skip '/'
 	l.readChar() // skip '*'
 
-	for {
-		if l.ch == 0 {
-			// Unterminated comment - return what we have
-			break
-		}
+	// Loop ends at l.ch == 0 (unterminated comment: return what we have).
+	for l.ch != 0 {
 		if l.ch == '*' && l.peekChar() == '/' {
 			l.readChar() // skip '*'
 			l.readChar() // skip '/'

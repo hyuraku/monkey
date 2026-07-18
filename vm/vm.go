@@ -352,8 +352,7 @@ func (vm *VM) executeBinaryIntegerOperation(op code.Opcode, left, right object.O
 		return fmt.Errorf("unknown operator: %d", op)
 	}
 
-	vm.push(object.NewInteger(result))
-	return nil
+	return vm.push(object.NewInteger(result))
 }
 
 func (vm *VM) executeBinaryFloatOperation(op code.Opcode, left, right object.Object) error {
@@ -375,8 +374,7 @@ func (vm *VM) executeBinaryFloatOperation(op code.Opcode, left, right object.Obj
 	default:
 		return fmt.Errorf("unknown operator: %d", op)
 	}
-	vm.push(&object.Float{Value: result})
-	return nil
+	return vm.push(&object.Float{Value: result})
 }
 
 func (vm *VM) executeBinaryStringOperation(op code.Opcode, left, right object.Object) error {
@@ -391,8 +389,7 @@ func (vm *VM) executeBinaryStringOperation(op code.Opcode, left, right object.Ob
 		return fmt.Errorf("unknown operator: %d", op)
 	}
 
-	vm.push(&object.String{Value: result})
-	return nil
+	return vm.push(&object.String{Value: result})
 }
 
 func (vm *VM) executeComparison(op code.Opcode) error {
@@ -597,11 +594,9 @@ func (vm *VM) callBuiltin(fn *object.Builtin, numArgs int) error {
 	result := fn.Fn(args...)
 	vm.sp = vm.sp - numArgs - 1
 	if result != nil {
-		vm.push(result)
-	} else {
-		vm.push(object.NULL)
+		return vm.push(result)
 	}
-	return nil
+	return vm.push(object.NULL)
 }
 
 func (vm *VM) callClosure(closure *object.Closure, numArgs int) error {

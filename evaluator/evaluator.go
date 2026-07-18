@@ -317,7 +317,7 @@ func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object
 		return builtin
 	}
 
-	return newError("identifier not found: " + node.Value)
+	return newError("identifier not found: %s", node.Value)
 }
 
 func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Object {
@@ -469,7 +469,7 @@ func evalAssignmentExpression(node *ast.AssignmentExpression, env *object.Enviro
 	// Get the current value of the identifier
 	currentVal, exists := env.Get(node.Name.Value)
 	if !exists {
-		return newError("identifier not found: " + node.Name.Value)
+		return newError("identifier not found: %s", node.Name.Value)
 	}
 
 	// Evaluate the right-hand side expression

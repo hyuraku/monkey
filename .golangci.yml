@@ -1,0 +1,16 @@
+# golangci-lint configuration (schema v2).
+# Conservative, high-signal linter set only. Expand deliberately.
+version: "2"
+
+linters:
+  # "standard" = errcheck, govet, ineffassign, staticcheck, unused.
+  default: standard
+
+formatters:
+  enable:
+    - gofmt
+
+issues:
+  # Surface every finding; do not silently cap duplicates.
+  max-issues-per-linter: 0
+  max-same-issues: 0

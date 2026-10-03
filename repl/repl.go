@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"monkey/evaluator"
 	"monkey/lexer"
 	"monkey/object"
 	"monkey/parser"
@@ -14,6 +15,7 @@ import (
 
 const PROMPT = ">> "
 
+// Start runs the REPL on the bytecode compiler + VM.
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 	constants := []object.Object{}
@@ -63,6 +65,42 @@ func Start(in io.Reader, out io.Writer) {
 		lastPopped := machine.LastPoppedStackElem()
 		if lastPopped != nil {
 			_, _ = io.WriteString(out, lastPopped.Inspect())
+			_, _ = io.WriteString(out, "\n")
+		}
+	}
+}
+
+// StartEval runs the REPL on the tree-walking evaluator.
+func StartEval(in io.Reader, out io.Writer) {
+	scanner := bufio.NewScanner(in)
+	env := object.NewEnvironment()
+
+	for {
+		fmt.Print(PROMPT)
+		scanned := scanner.Scan()
+		if !scanned {
+			return
+		}
+
+		line := scanner.Text()
+
+		if line == "exit" {
+			fmt.Println("bye!")
+			return
+		}
+		l := lexer.New(line)
+		p := parser.New(l)
+
+		program := p.ParseProgram()
+
+		if len(p.Errors()) != 0 {
+			printParserErrors(out, p.Errors())
+			continue
+		}
+
+		evaluated := evaluator.Eval(program, env)
+		if evaluated != nil {
+			_, _ = io.WriteString(out, evaluated.Inspect())
 			_, _ = io.WriteString(out, "\n")
 		}
 	}

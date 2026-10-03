@@ -93,7 +93,7 @@ Hello XXX World
 - **Integers**: `5`, `10`, `-5`
 - **Floats**: `3.14`, `-5.2`
 - **Booleans**: `true`, `false`
-- **Strings**: `"hello world"`
+- **Strings**: `"hello world"`. Escape sequences: `\n` (newline), `\t` (tab), `\r` (carriage return), `\\` (backslash) and `\"` (double quote). A backslash before any other character is kept as is, so `regex("\\d+")` and `regex("\d+")` both mean the pattern `\d+`
 - **Arrays**: `[1, 2, 3]`
 - **Hashes**: `{"name": "Monkey", "age": 5}`
 - **Functions**: `fn(x, y) { x + y }`

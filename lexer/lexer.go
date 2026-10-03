@@ -258,16 +258,43 @@ func (l *Lexer) skipWhitespace() {
 	}
 }
 
+// readString reads a double-quoted string literal and interprets the escape
+// sequences \n, \t, \r, \\ and \". Any other backslash is kept as is, so
+// regex patterns such as "\d+" and "\\d+" both reach regex() as \d+.
 func (l *Lexer) readString() string {
-	position := l.position + 1
+	var out strings.Builder
 	for {
 		l.readChar()
 		if l.ch == '"' || l.ch == 0 {
 			break
 		}
+		if l.ch == '\\' {
+			if escaped, ok := unescape(l.peekChar()); ok {
+				l.readChar()
+				out.WriteByte(escaped)
+				continue
+			}
+		}
+		out.WriteByte(l.ch)
 	}
-	stringLiteral := l.input[position:l.position]
-	return l.internString(stringLiteral)
+	return l.internString(out.String())
+}
+
+func unescape(ch byte) (byte, bool) {
+	switch ch {
+	case 'n':
+		return '\n', true
+	case 't':
+		return '\t', true
+	case 'r':
+		return '\r', true
+	case '\\':
+		return '\\', true
+	case '"':
+		return '"', true
+	default:
+		return 0, false
+	}
 }
 
 func (l *Lexer) readSingleLineComment() string {

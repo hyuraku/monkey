@@ -332,3 +332,56 @@ let abc123def = 42;
 		}
 	}
 }
+
+func TestStringEscapes(t *testing.T) {
+	tests := []struct {
+		input           string
+		expectedLiteral string
+	}{
+		{`"a\nb"`, "a\nb"},
+		{`"a\tb"`, "a\tb"},
+		{`"a\rb"`, "a\rb"},
+		{`"a\\b"`, `a\b`},
+		{`"say \"hi\""`, `say "hi"`},
+		{`"ends with \\"`, `ends with \`},
+		// Unknown escapes keep the backslash, so regex patterns work either way.
+		{`"\d+"`, `\d+`},
+		{`"\\d+"`, `\d+`},
+		{`"\w+@\w+\.\w+"`, `\w+@\w+\.\w+`},
+		{`"\\n"`, `\n`},
+		{`"no escapes"`, "no escapes"},
+		{`"日本語\t"`, "日本語\t"},
+	}
+
+	for i, tt := range tests {
+		l := New(tt.input + ";")
+
+		tok := l.NextToken()
+		if tok.Type != token.STRING {
+			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q",
+				i, token.STRING, tok.Type)
+		}
+		if tok.Literal != tt.expectedLiteral {
+			t.Fatalf("tests[%d] - literal wrong. expected=%q, got=%q",
+				i, tt.expectedLiteral, tok.Literal)
+		}
+
+		// The escaped quote must not end the string early.
+		if tok = l.NextToken(); tok.Type != token.SEMICOLON {
+			t.Fatalf("tests[%d] - expected SEMICOLON after string, got=%q (%q)",
+				i, tok.Type, tok.Literal)
+		}
+	}
+}
+
+func TestUnterminatedStringWithTrailingBackslash(t *testing.T) {
+	l := New(`"abc\`)
+
+	tok := l.NextToken()
+	if tok.Type != token.STRING || tok.Literal != `abc\` {
+		t.Fatalf("expected STRING %q, got=%q (%q)", `abc\`, tok.Type, tok.Literal)
+	}
+	if tok = l.NextToken(); tok.Type != token.EOF {
+		t.Fatalf("expected EOF, got=%q (%q)", tok.Type, tok.Literal)
+	}
+}

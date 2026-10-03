@@ -74,6 +74,7 @@ puts(add(1, 2));
 func TestRunErrorExitCodes(t *testing.T) {
 	syntaxError := writeFile(t, "let = 5;")
 	runtimeError := writeFile(t, `puts("before"); 1 + true;`)
+	builtinError := writeFile(t, `first(1); puts("after");`)
 	missing := filepath.Join(t.TempDir(), "missing.monkey")
 
 	tests := []struct {
@@ -88,6 +89,8 @@ func TestRunErrorExitCodes(t *testing.T) {
 		{"syntax error eval", []string{"-engine=eval", syntaxError}, 1, "parser errors"},
 		{"runtime error vm", []string{"-engine=vm", runtimeError}, 1, "executing bytecode failed"},
 		{"runtime error eval", []string{"-engine=eval", runtimeError}, 1, "evaluation failed"},
+		{"builtin error vm", []string{"-engine=vm", builtinError}, 1, "executing bytecode failed: argument to `first` must be ARRAY"},
+		{"builtin error eval", []string{"-engine=eval", builtinError}, 1, "evaluation failed: argument to `first` must be ARRAY"},
 		{"invalid engine", []string{"-engine=jit", syntaxError}, 2, "Usage: monkey"},
 		{"invalid engine without file", []string{"-engine=jit"}, 2, "Usage: monkey"},
 		{"unknown flag", []string{"-e", syntaxError}, 2, "Usage: monkey"},
@@ -110,14 +113,6 @@ func TestRunErrorExitCodes(t *testing.T) {
 			}
 		})
 	}
-}
-
-// examplesWithHashOutput print a hash with puts. Hash.Inspect iterates a Go
-// map, so its key order is not deterministic and the outputs of the two
-// engines cannot be compared byte for byte.
-var examplesWithHashOutput = map[string]bool{
-	"hashes.monkey": true,
-	"json.monkey":   true,
 }
 
 func TestExamplesRunOnBothEngines(t *testing.T) {
@@ -149,9 +144,6 @@ func TestExamplesRunOnBothEngines(t *testing.T) {
 				}
 			}
 
-			if examplesWithHashOutput[filepath.Base(file)] {
-				return
-			}
 			if outputs["vm"] != outputs["eval"] {
 				t.Fatalf("outputs differ\nvm:\n%s\neval:\n%s", outputs["vm"], outputs["eval"])
 			}
@@ -173,6 +165,34 @@ func TestREPLEngines(t *testing.T) {
 			}
 			if !strings.Contains(stdout.String(), "42\n") {
 				t.Fatalf("REPL output: got %q, want it to contain %q", stdout.String(), "42\n")
+			}
+		})
+	}
+}
+
+func TestREPLContinuesAfterBuiltinError(t *testing.T) {
+	wantError := map[string]string{
+		"vm":   "Woops! Executing bytecode failed:\n argument to `first` must be ARRAY, got INTEGER\n",
+		"eval": "ERROR: argument to `first` must be ARRAY, got INTEGER\n",
+	}
+
+	for _, engine := range []string{"vm", "eval"} {
+		t.Run(engine, func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			stdin := strings.NewReader("let x = 2;\nfirst(1)\nx * 21\nexit\n")
+			var code int
+			captureStdout(t, func() {
+				code = run([]string{"-engine=" + engine}, stdin, &stdout, &stderr)
+			})
+			if code != 0 {
+				t.Fatalf("exit code: got %d, want 0 (stderr: %q)", code, stderr.String())
+			}
+			out := stdout.String()
+			if !strings.Contains(out, wantError[engine]) {
+				t.Fatalf("REPL output: got %q, want it to contain %q", out, wantError[engine])
+			}
+			if !strings.Contains(out, "42\n") {
+				t.Fatalf("REPL output: got %q, want it to contain %q after the error", out, "42\n")
 			}
 		})
 	}

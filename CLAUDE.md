@@ -10,7 +10,7 @@ This is a Go implementation of the Monkey programming language, featuring both a
 
 ### Build Commands
 ```bash
-# Build the REPL executable (the only entry point)
+# Build the monkey executable (REPL + file execution)
 go build -o monkey
 
 # Build benchmark tool
@@ -46,9 +46,18 @@ go test ./conformance
 ```bash
 # Run the interactive REPL (type `exit` to quit)
 ./monkey
+./monkey -engine=eval              # REPL on the tree-walking interpreter
+
+# Run a file (multi-line programs are fine)
+./monkey examples/hello.monkey               # bytecode VM (default)
+./monkey -engine=eval examples/hello.monkey  # tree-walking interpreter
 ```
 
-There is no file-execution mode: the binary accepts no command-line flags, so the `.monkey` files under `examples/` cannot be run directly. The only way to execute Monkey code is to type it into the REPL, which reads one line at a time (multi-line programs must be joined into a single line first).
+Usage is `monkey [-engine=vm|eval] [file]`. `-engine` defaults to `vm` (same flag name and values as `benchmark/`) and applies to both the REPL and file execution. The REPL still reads one line at a time; use file execution for multi-line programs. File execution prints only what the program outputs with `puts()` (the value of the last expression is not printed). Parse, compile and runtime errors go to stderr with exit code 1; an invalid `-engine` value or extra arguments print usage with exit code 2.
+
+The CLI is split into `main.go` (flag parsing and exit codes, tested in `main_test.go`), `runner/` (runs a whole program on the selected engine) and `repl/` (`Start` for the VM, `StartEval` for the evaluator). `main_test.go` runs every `examples/*.monkey` on both engines.
+
+Note: the VM does not stop on errors returned by builtins (e.g. `first(1)` becomes an error value and execution continues), while the evaluator stops and file execution exits with code 1.
 
 ## Architecture Overview
 
@@ -68,6 +77,8 @@ The codebase implements two execution paths:
 - **code/**: Bytecode instruction set definitions
 - **object/**: Runtime object system and built-in functions
 - **token/**: Token type definitions and keyword mappings
+- **runner/**: Runs a whole program (file execution mode) on the VM or the evaluator
+- **repl/**: Line-by-line REPL on either engine
 
 ### Object System
 

@@ -21,6 +21,27 @@ go build -o monkey
 ./monkey
 ```
 
+```
+Usage: monkey [-engine=vm|eval] [file]
+```
+
+- Without `file`, the REPL starts. With `file`, the whole file (multi-line programs are fine) is executed.
+- `-engine` selects the execution engine: `vm` (bytecode compiler + virtual machine, the default) or `eval` (tree-walking interpreter). It works for both the REPL and file execution, and uses the same values as the benchmark tool.
+
+### Running a File
+
+```bash
+# Run a file on the virtual machine (default)
+./monkey examples/hello.monkey
+
+# Run the same file on the tree-walking interpreter
+./monkey -engine=eval examples/hello.monkey
+```
+
+File execution prints only what the program writes with `puts()`. If the file cannot be read, or parsing, compilation or execution fails, an error is printed to stderr and the exit code is 1. An invalid `-engine` value prints usage and exits with code 2. See [examples/](examples) for sample programs.
+
+### REPL
+
 Once the REPL starts, you can enter expressions in the Monkey language:
 
 ```monkey
@@ -60,6 +81,7 @@ Hello XXX World
 ├── object/               # Object system
 ├── parser/               # Parser
 ├── repl/                 # REPL (Read-Eval-Print Loop)
+├── runner/               # File execution on the VM or the interpreter
 ├── token/                # Token definitions
 └── vm/                   # Virtual machine implementation
 ```

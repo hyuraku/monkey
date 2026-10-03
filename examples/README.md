@@ -13,14 +13,20 @@ go build -o monkey
 Then you can run any example file using:
 
 ```bash
-./monkey -e examples/filename.monkey
+./monkey examples/filename.monkey
+```
+
+Add `-engine=eval` to run it on the tree-walking interpreter instead of the bytecode VM (the default):
+
+```bash
+./monkey -engine=eval examples/filename.monkey
 ```
 
 Or run the examples from the examples directory:
 
 ```bash
 cd examples
-../monkey -e filename.monkey
+../monkey filename.monkey
 ```
 
 ## Available Examples
@@ -31,7 +37,7 @@ cd examples
 Basic string output demonstration.
 
 ```bash
-../monkey -e hello.monkey
+../monkey hello.monkey
 ```
 
 ### 2. Recursion
@@ -40,7 +46,7 @@ Basic string output demonstration.
 Recursive function examples demonstrating countdown and sum calculations.
 
 ```bash
-../monkey -e recursion.monkey
+../monkey recursion.monkey
 ```
 
 ### 3. Array Operations
@@ -49,7 +55,7 @@ Recursive function examples demonstrating countdown and sum calculations.
 Demonstrates array manipulation with built-in functions: `len()`, `first()`, `last()`, `rest()`, `push()`, `pop()`.
 
 ```bash
-../monkey -e arrays.monkey
+../monkey arrays.monkey
 ```
 
 ### 4. Functions
@@ -58,7 +64,7 @@ Demonstrates array manipulation with built-in functions: `len()`, `first()`, `la
 First-class functions and function composition examples.
 
 ```bash
-../monkey -e functions.monkey
+../monkey functions.monkey
 ```
 
 ### 5. Hash Operations
@@ -67,7 +73,7 @@ First-class functions and function composition examples.
 Hash (dictionary) creation and access, including nested hashes.
 
 ```bash
-../monkey -e hashes.monkey
+../monkey hashes.monkey
 ```
 
 ### 6. Array Functions
@@ -76,7 +82,7 @@ Hash (dictionary) creation and access, including nested hashes.
 Working with arrays and functions for data transformation.
 
 ```bash
-../monkey -e array_functions.monkey
+../monkey array_functions.monkey
 ```
 
 ### 7. String Operations
@@ -85,7 +91,7 @@ Working with arrays and functions for data transformation.
 String manipulation using built-in functions: `upper()`, `lower()`, `split()`, `join()`.
 
 ```bash
-../monkey -e string_operations.monkey
+../monkey string_operations.monkey
 ```
 
 ### 8. Math Operations
@@ -94,7 +100,7 @@ String manipulation using built-in functions: `upper()`, `lower()`, `split()`, `
 Mathematical functions and float support: `abs()`, `min()`, `max()`, `sqrt()`.
 
 ```bash
-../monkey -e math.monkey
+../monkey math.monkey
 ```
 
 ### 9. Regular Expressions
@@ -103,7 +109,7 @@ Mathematical functions and float support: `abs()`, `min()`, `max()`, `sqrt()`.
 Pattern matching and text manipulation using `regex()`, `match()`, `replace()`, `regex_split()`.
 
 ```bash
-../monkey -e regex.monkey
+../monkey regex.monkey
 ```
 
 ### 10. JSON Processing
@@ -112,7 +118,7 @@ Pattern matching and text manipulation using `regex()`, `match()`, `replace()`, 
 JSON stringification with `json_stringify()` for converting arrays and hashes to JSON format.
 
 ```bash
-../monkey -e json.monkey
+../monkey json.monkey
 ```
 
 ## Running All Examples
@@ -123,7 +129,7 @@ You can run all examples at once using a simple shell loop:
 # From the project root
 for file in examples/*.monkey; do
     echo "==== Running $file ===="
-    ./monkey -e "$file"
+    ./monkey "$file"
     echo ""
 done
 ```
@@ -134,26 +140,20 @@ Or from the examples directory:
 # From the examples directory
 for file in *.monkey; do
     echo "==== Running $file ===="
-    ../monkey -e "$file"
+    ../monkey "$file"
     echo ""
 done
 ```
 
 ## Interactive REPL
 
-You can also try these code snippets interactively in the REPL. First build the REPL:
+You can also try these code snippets interactively in the REPL by running the binary without a file:
 
 ```bash
-go build -o monkey-repl ./cmd/monkey-repl
+./monkey
 ```
 
-Then run it:
-
-```bash
-./monkey-repl
-```
-
-Type or paste any Monkey code directly into the prompt.
+Type or paste Monkey code into the prompt. The REPL reads one line at a time, so multi-line programs are easier to run as files.
 
 ## Language Features Demonstrated
 

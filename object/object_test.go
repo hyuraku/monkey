@@ -1870,3 +1870,59 @@ func TestJSONParseInvalidJSON(t *testing.T) {
 		t.Errorf("error message should contain 'invalid JSON'. got=%q", errObj.Message)
 	}
 }
+
+func newTestHash(keys ...Object) *Hash {
+	pairs := make(map[HashKey]HashPair)
+	for i, key := range keys {
+		pairs[key.(Hashable).HashKey()] = HashPair{Key: key, Value: NewInteger(int64(i))}
+	}
+	return &Hash{Pairs: pairs}
+}
+
+func TestHashInspectIsSorted(t *testing.T) {
+	tests := []struct {
+		name     string
+		hash     *Hash
+		expected string
+	}{
+		{"empty", newTestHash(), "{}"},
+		{
+			"string keys in byte order",
+			newTestHash(&String{Value: "name"}, &String{Value: "age"}, &String{Value: "city"}, &String{Value: "Zip"}),
+			"{Zip: 3, age: 1, city: 2, name: 0}",
+		},
+		{
+			"integer keys in numeric order",
+			newTestHash(NewInteger(10), NewInteger(2), NewInteger(-1)),
+			"{-1: 2, 2: 1, 10: 0}",
+		},
+		{
+			"mixed keys grouped by type",
+			newTestHash(&String{Value: "a"}, NewInteger(1), TRUE, FALSE, &String{Value: "1"}),
+			"{false: 3, true: 2, 1: 1, 1: 4, a: 0}",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Go map iteration order is random, so check several times.
+			for i := 0; i < 20; i++ {
+				if got := tt.hash.Inspect(); got != tt.expected {
+					t.Fatalf("Inspect() = %q, want %q", got, tt.expected)
+				}
+			}
+		})
+	}
+}
+
+func TestHashInspectMatchesJSONStringifyKeyOrder(t *testing.T) {
+	hash := newTestHash(&String{Value: "name"}, &String{Value: "age"}, &String{Value: "city"}, &String{Value: "Zip"})
+
+	jsonOut := GetBuiltinByName("json_stringify").Fn(hash).(*String).Value
+	if want := `{"Zip":3,"age":1,"city":2,"name":0}`; jsonOut != want {
+		t.Fatalf("json_stringify = %q, want %q", jsonOut, want)
+	}
+	if want := "{Zip: 3, age: 1, city: 2, name: 0}"; hash.Inspect() != want {
+		t.Fatalf("Inspect() = %q, want %q", hash.Inspect(), want)
+	}
+}

@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"errors"
 	"fmt"
 	"monkey/code"
 	"monkey/compiler"
@@ -595,6 +596,11 @@ func (vm *VM) callBuiltin(fn *object.Builtin, numArgs int) error {
 	args := vm.stack[vm.sp-numArgs : vm.sp]
 	result := fn.Fn(args...)
 	vm.sp = vm.sp - numArgs - 1
+	// Stop on an error returned by the builtin, like the evaluator does,
+	// instead of pushing it as an ordinary value.
+	if errObj, ok := result.(*object.Error); ok {
+		return errors.New(errObj.Message)
+	}
 	if result != nil {
 		return vm.push(result)
 	}

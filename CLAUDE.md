@@ -57,7 +57,7 @@ Usage is `monkey [-engine=vm|eval] [file]`. `-engine` defaults to `vm` (same fla
 
 The CLI is split into `main.go` (flag parsing and exit codes, tested in `main_test.go`), `runner/` (runs a whole program on the selected engine) and `repl/` (`Start` for the VM, `StartEval` for the evaluator). `main_test.go` runs every `examples/*.monkey` on both engines.
 
-Note: the VM does not stop on errors returned by builtins (e.g. `first(1)` becomes an error value and execution continues), while the evaluator stops and file execution exits with code 1.
+Both engines stop on errors returned by builtins (e.g. `first(1)`): the evaluator returns the error object, the VM returns it from `Run` with the same message, and file execution exits with code 1.
 
 ## Architecture Overview
 

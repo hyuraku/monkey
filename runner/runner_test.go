@@ -129,3 +129,29 @@ func TestRunStopsAtRuntimeError(t *testing.T) {
 		})
 	}
 }
+
+func TestRunStopsAtBuiltinError(t *testing.T) {
+	input := `puts("before"); first(1); puts("after");`
+	wantErr := map[string]string{
+		EngineVM:   "executing bytecode failed: argument to `first` must be ARRAY, got INTEGER",
+		EngineEval: "evaluation failed: argument to `first` must be ARRAY, got INTEGER",
+	}
+
+	for _, engine := range engines {
+		t.Run(engine, func(t *testing.T) {
+			var err error
+			got := captureStdout(t, func() {
+				err = Run(input, engine)
+			})
+			if err == nil {
+				t.Fatalf("expected error, got nil")
+			}
+			if err.Error() != wantErr[engine] {
+				t.Fatalf("error: got %q, want %q", err.Error(), wantErr[engine])
+			}
+			if got != "before\n" {
+				t.Fatalf("output: got %q, want %q", got, "before\n")
+			}
+		})
+	}
+}

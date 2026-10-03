@@ -473,6 +473,16 @@ func runVmTests(t *testing.T, tests []vmTestCase) {
 
 		vm := New(comp.Bytecode())
 		err = vm.Run()
+		// An expected *object.Error means the VM must stop with that message.
+		if expectedErr, ok := tt.expected.(*object.Error); ok {
+			if err == nil {
+				t.Fatalf("expected VM error %q but resulted in none", expectedErr.Message)
+			}
+			if err.Error() != expectedErr.Message {
+				t.Fatalf("wrong VM error: want=%q, got=%q", expectedErr.Message, err)
+			}
+			continue
+		}
 		if err != nil {
 			t.Fatalf("vm error: %s", err)
 		}
@@ -536,16 +546,6 @@ func testExpectedObject(t *testing.T, expected interface{}, actual object.Object
 				t.Errorf("testIntegerObject failed: %s", err)
 			}
 		}
-	case *object.Error:
-		errObj, ok := actual.(*object.Error)
-		if !ok {
-			t.Errorf("object is not Error: %T (%+v)", actual, actual)
-			return
-		}
-		if errObj.Message != expected.Message {
-			t.Errorf("wrong error message. expected=%q, got=%q",
-				expected.Message, errObj.Message)
-		}
 	}
 }
 
@@ -588,6 +588,17 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`push(1, 1)`,
 			&object.Error{
 				Message: "argument to `push` must be ARRAY, got INTEGER",
+			},
+		},
+		// A builtin error stops execution; the statements after it never run.
+		{`first(1); 99`,
+			&object.Error{
+				Message: "argument to `first` must be ARRAY, got INTEGER",
+			},
+		},
+		{`let f = fn() { len(1); 1 }; f() + 1`,
+			&object.Error{
+				Message: "argument to `len` not supported, got INTEGER",
 			},
 		},
 	}

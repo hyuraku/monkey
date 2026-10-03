@@ -2,11 +2,13 @@ package object
 
 import (
 	"bytes"
+	"cmp"
 	"fmt"
 	"hash/fnv"
 	"monkey/ast"
 	"monkey/code"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -179,7 +181,7 @@ func (h *Hash) Inspect() string {
 	var out bytes.Buffer
 
 	pairs := []string{}
-	for _, pair := range h.Pairs {
+	for _, pair := range h.sortedPairs() {
 		pairs = append(pairs, fmt.Sprintf("%s: %s", pair.Key.Inspect(), pair.Value.Inspect()))
 	}
 
@@ -188,6 +190,44 @@ func (h *Hash) Inspect() string {
 	out.WriteString("}")
 
 	return out.String()
+}
+
+// sortedPairs returns the pairs of h in a deterministic order: grouped by
+// key type (BOOLEAN, INTEGER, STRING), then false before true, integers in
+// numeric order and strings in byte order. String keys therefore come out in
+// the same order as json_stringify, whose encoding/json output sorts keys.
+func (h *Hash) sortedPairs() []HashPair {
+	pairs := make([]HashPair, 0, len(h.Pairs))
+	for _, pair := range h.Pairs {
+		pairs = append(pairs, pair)
+	}
+	sort.Slice(pairs, func(i, j int) bool {
+		return compareHashKeys(pairs[i].Key, pairs[j].Key) < 0
+	})
+	return pairs
+}
+
+func compareHashKeys(a, b Object) int {
+	if a.Type() != b.Type() {
+		return strings.Compare(string(a.Type()), string(b.Type()))
+	}
+	switch a := a.(type) {
+	case *Boolean:
+		return cmp.Compare(boolToInt(a.Value), boolToInt(b.(*Boolean).Value))
+	case *Integer:
+		return cmp.Compare(a.Value, b.(*Integer).Value)
+	case *String:
+		return strings.Compare(a.Value, b.(*String).Value)
+	default:
+		return strings.Compare(a.Inspect(), b.Inspect())
+	}
+}
+
+func boolToInt(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
 }
 
 type Hashable interface {
